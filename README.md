@@ -4,9 +4,9 @@ Calendario de Adviento web interactivo personalizado para **Nora (Nori)**, progr
 
 ## Datos configurados
 - **Clave de entrada:** `0207`
-- **Código de Modo Creador:** `VICENT` (permite abrir cualquier puerta antes del 1 de diciembre para probarlo)
+- **Modo Creador (oculto):** Toca 5 veces seguidas el título `"El Adviento de Nori ✨"` (o entra con `?creador=1` en la URL) e introduce `VICENT`.
 - **WhatsApp para canjear vales:** `34626661315`
-- **Código secreto del Día 24:** `NORITA` (se forma con las letras doradas de los días 4, 8, 12, 16, 20 y 23)
+- **Código secreto del Día 24:** `M7C2V0` (se forma con las claves doradas de los días 4, 8, 12, 16, 20 y 23)
 
 ## Cómo personalizar fotos, textos y el regalo del Día 24
 1. **Fotos propias:** Copia tus fotos en `assets/photos/` con los nombres `dia-1.jpg`, `dia-6.jpg`, `dia-9.jpg`, `dia-13.jpg`, `dia-17.jpg`, `dia-19.jpg` y `dia-22.jpg`. Si falta alguna foto, la app muestra automáticamente una ilustración navideña a medida.

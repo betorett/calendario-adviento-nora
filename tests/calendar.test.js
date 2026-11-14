@@ -23,15 +23,24 @@ test("DAYS_DATA contiene exactamente 24 días consecutivos del 1 al 24", () => {
   );
 });
 
-test("Los fragmentos secretos en DAYS_DATA forman exactamente NORITA", () => {
+test("Los fragmentos secretos en DAYS_DATA forman exactamente M7C2V0", () => {
   const fragInfo = getSecretFragmentsState(DAYS_DATA, [], true);
   assert.equal(fragInfo.totalCount, 6);
   assert.equal(fragInfo.assembledCode, CONFIG.secretWord);
-  assert.equal(CONFIG.secretWord, "NORITA");
+  assert.equal(CONFIG.secretWord, "M7C2V0");
   assert.deepEqual(
     fragInfo.fragments.map((f) => f.day),
     [4, 8, 12, 16, 20, 23]
   );
+});
+
+test("Los días 2, 8, 14 y 21 usan los 4 nuevos mini-juegos móviles y el día 20 es burrito o burguer", () => {
+  const byDay = new Map(DAYS_DATA.map((d) => [d.day, d]));
+  assert.equal(byDay.get(2).type, "memory");
+  assert.equal(byDay.get(8).type, "catcher");
+  assert.equal(byDay.get(14).type, "simon");
+  assert.equal(byDay.get(21).type, "whack");
+  assert.match(byDay.get(20).voucherTitle, /burrito|burguer/i);
 });
 
 test("Los Wordles personalizados tienen palabras de 5 letras válidas (MILAN, COVES, SOPAS)", () => {
@@ -65,7 +74,7 @@ test("evaluateWordleGuess gestiona letras exactas, presentes y repetidas", () =>
   ]);
 });
 
-test("Validación de PIN 0207, código creador VICENT y secreto NORITA", () => {
+test("Validación de PIN 0207, código creador VICENT y secreto M7C2V0", () => {
   assert.equal(validatePin("0207", CONFIG.pinCode), true);
   assert.equal(validatePin(" 0207 ", CONFIG.pinCode), true);
   assert.equal(validatePin("1234", CONFIG.pinCode), false);
@@ -74,9 +83,9 @@ test("Validación de PIN 0207, código creador VICENT y secreto NORITA", () => {
   assert.equal(validateCreatorCode("VICENT", CONFIG.creatorCode), true);
   assert.equal(validateCreatorCode("otro", CONFIG.creatorCode), false);
 
-  assert.equal(validateSecretCode("norita", CONFIG.secretWord), true);
-  assert.equal(validateSecretCode("NORITA", CONFIG.secretWord), true);
-  assert.equal(validateSecretCode("NORA", CONFIG.secretWord), false);
+  assert.equal(validateSecretCode("m7c2v0", CONFIG.secretWord), true);
+  assert.equal(validateSecretCode("M7C2V0", CONFIG.secretWord), true);
+  assert.equal(validateSecretCode("NORITA", CONFIG.secretWord), false);
 });
 
 test("isDayUnlocked bloquea antes de diciembre, desbloquea día a día y respeta Modo Creador", () => {

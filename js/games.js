@@ -77,11 +77,53 @@ function createFragmentBadge(letter) {
   badge.innerHTML = `
     <span class="fragment-award-icon">🗝️</span>
     <div>
-      <strong>¡Fragmento Secreto Desbloqueado!</strong>
-      <p>Has conseguido la letra dorada <span class="fragment-pill">${letter}</span> para el cofre del Día 24.</p>
+      <strong>¡Clave Secreta Desbloqueada!</strong>
+      <p>Has conseguido el carácter <span class="fragment-pill">${letter}</span> para el cofre del Día 24.</p>
     </div>
   `;
   return badge;
+}
+
+function showWinFeedback(feedbackEl, dayData, onComplete) {
+  feedbackEl.className = "game-feedback is-success";
+  feedbackEl.innerHTML = `<p><strong>${dayData.rewardTitle || "¡Reto superado!"}</strong></p><p>${dayData.message}</p>`;
+  if (dayData.fragmentLetter) {
+    feedbackEl.appendChild(createFragmentBadge(dayData.fragmentLetter));
+  }
+  onComplete(dayData);
+}
+
+let fxAudioCtx = null;
+function unlockGameAudio() {
+  try {
+    const AudioCtx = globalThis.AudioContext || globalThis.webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!fxAudioCtx) fxAudioCtx = new AudioCtx();
+    if (fxAudioCtx.state === "suspended") fxAudioCtx.resume();
+    return fxAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+function playGameTone(freq, durationMs = 220) {
+  try {
+    const ctx = unlockGameAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.14, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + durationMs / 1000);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + durationMs / 1000 + 0.02);
+  } catch {
+    // Silencioso si el navegador bloquea AudioContext
+  }
 }
 
 /**
@@ -260,58 +302,606 @@ function renderVoucher(container, dayData, config, stateApi, onComplete) {
 }
 
 /**
- * 3. QUIZ SOBRE VUESTRA HISTORIA
+ * 3A. MEMORY NAVIDEÑO 4x3 (6 PAREJAS)
  */
-function renderQuiz(container, dayData, onComplete) {
-  const box = document.createElement("div");
-  box.className = "quiz-box";
+function renderMemory(container, dayData, onComplete) {
+  const pairs = dayData.pairs || ["🍲", "✈️", "🐾", "🌯", "🎬", "❤️"];
+  const deck = [...pairs, ...pairs];
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
 
-  const questionEl = document.createElement("h3");
-  questionEl.className = "quiz-question";
-  questionEl.textContent = dayData.question;
+  const wrap = document.createElement("div");
+  wrap.className = "memory-wrapper";
 
-  const optionsGrid = document.createElement("div");
-  optionsGrid.className = "quiz-options";
+  const hud = document.createElement("div");
+  hud.className = "game-hud";
+  const movesEl = document.createElement("span");
+  movesEl.textContent = "Intentos: 0";
+  const pairsEl = document.createElement("span");
+  pairsEl.textContent = `Parejas: 0 / ${pairs.length}`;
+  hud.append(movesEl, pairsEl);
+
+  const grid = document.createElement("div");
+  grid.className = "memory-grid";
 
   const feedback = document.createElement("div");
   feedback.className = "game-feedback";
   feedback.setAttribute("aria-live", "polite");
 
-  let solved = false;
+  let firstCard = null;
+  let secondCard = null;
+  let lockBoard = false;
+  let moves = 0;
+  let matchedCount = 0;
+  let flipTimer = null;
 
-  dayData.options.forEach((optText, idx) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "quiz-option-btn";
-    btn.textContent = optText;
+  deck.forEach((symbol, idx) => {
+    const cardBtn = document.createElement("button");
+    cardBtn.type = "button";
+    cardBtn.className = "memory-card";
+    cardBtn.setAttribute("aria-label", `Carta ${idx + 1}`);
+    cardBtn.innerHTML = `
+      <span class="memory-card-inner">
+        <span class="memory-face memory-back">✨</span>
+        <span class="memory-face memory-front">${symbol}</span>
+      </span>
+    `;
 
-    btn.addEventListener("click", () => {
-      if (solved) return;
+    cardBtn.addEventListener("click", () => {
+      if (
+        lockBoard ||
+        cardBtn === firstCard ||
+        cardBtn.classList.contains("is-matched")
+      ) {
+        return;
+      }
 
-      if (idx === dayData.correctIndex) {
-        solved = true;
-        btn.classList.add("is-correct");
-        optionsGrid.querySelectorAll("button").forEach((b) => {
-          b.disabled = true;
-        });
-        feedback.className = "game-feedback is-success";
-        feedback.innerHTML = `<p><strong>${dayData.rewardTitle || "¡Acertaste!"}</strong></p><p>${dayData.message}</p>`;
-        if (dayData.fragmentLetter) {
-          feedback.appendChild(createFragmentBadge(dayData.fragmentLetter));
+      cardBtn.classList.add("is-flipped");
+      cardBtn.setAttribute("aria-label", `Carta ${idx + 1}: ${symbol}`);
+
+      if (!firstCard) {
+        firstCard = cardBtn;
+        return;
+      }
+
+      secondCard = cardBtn;
+      moves += 1;
+      movesEl.textContent = `Intentos: ${moves}`;
+
+      const sym1 = firstCard.querySelector(".memory-front").textContent;
+      const sym2 = secondCard.querySelector(".memory-front").textContent;
+
+      if (sym1 === sym2) {
+        firstCard.classList.add("is-matched");
+        secondCard.classList.add("is-matched");
+        firstCard = null;
+        secondCard = null;
+        matchedCount += 1;
+        pairsEl.textContent = `Parejas: ${matchedCount} / ${pairs.length}`;
+
+        if (matchedCount === pairs.length) {
+          showWinFeedback(feedback, dayData, onComplete);
         }
-        onComplete(dayData);
       } else {
-        btn.classList.add("is-wrong");
-        feedback.className = "game-feedback is-hint";
-        feedback.textContent = dayData.wrongHint || "¡Casi! Prueba con otra opción 😉";
+        lockBoard = true;
+        flipTimer = setTimeout(() => {
+          if (firstCard) {
+            firstCard.classList.remove("is-flipped");
+            firstCard.setAttribute("aria-label", "Carta oculta");
+          }
+          if (secondCard) {
+            secondCard.classList.remove("is-flipped");
+            secondCard.setAttribute("aria-label", "Carta oculta");
+          }
+          firstCard = null;
+          secondCard = null;
+          lockBoard = false;
+        }, 650);
       }
     });
 
-    optionsGrid.appendChild(btn);
+    grid.appendChild(cardBtn);
   });
 
-  box.append(questionEl, optionsGrid, feedback);
-  container.appendChild(box);
+  wrap.append(hud, grid, feedback);
+  container.appendChild(wrap);
+
+  return () => {
+    clearTimeout(flipTimer);
+  };
+}
+
+/**
+ * 3B. ARCADE TÁCTIL: ¡LA SOPA CALENTITA DE NORI!
+ */
+function renderCatcher(container, dayData, onComplete) {
+  const targetScore = dayData.targetScore || 10;
+  const goodItems = ["🥕", "🍄", "🍜", "🍗", "🧅"];
+  const badItems = ["🧦", "💣"];
+
+  const wrap = document.createElement("div");
+  wrap.className = "catcher-wrapper";
+
+  const hud = document.createElement("div");
+  hud.className = "game-hud";
+  const scoreEl = document.createElement("span");
+  scoreEl.textContent = `Puntos: 0 / ${targetScore}`;
+  const tipEl = document.createElement("span");
+  tipEl.textContent = "👆 Desliza la olla";
+  hud.append(scoreEl, tipEl);
+
+  const canvas = document.createElement("canvas");
+  canvas.className = "catcher-canvas";
+  canvas.width = 360;
+  canvas.height = 320;
+  canvas.setAttribute("aria-label", "Juego de atrapar ingredientes para la sopa");
+
+  const controls = document.createElement("div");
+  controls.className = "catcher-controls";
+  const leftBtn = document.createElement("button");
+  leftBtn.type = "button";
+  leftBtn.className = "btn-outline btn-sm";
+  leftBtn.textContent = "⬅️ Mover izquierda";
+  const rightBtn = document.createElement("button");
+  rightBtn.type = "button";
+  rightBtn.className = "btn-outline btn-sm";
+  rightBtn.textContent = "Mover derecha ➡️";
+  controls.append(leftBtn, rightBtn);
+
+  const feedback = document.createElement("div");
+  feedback.className = "game-feedback";
+  feedback.setAttribute("aria-live", "polite");
+
+  wrap.append(hud, canvas, controls, feedback);
+  container.appendChild(wrap);
+
+  const ctx = canvas.getContext("2d");
+  let potX = canvas.width / 2;
+  const potY = canvas.height - 30;
+  const potHalfWidth = 34;
+  let score = 0;
+  let finished = false;
+  let moveDir = 0;
+  let items = [];
+  let popups = [];
+  let spawnAcc = 0;
+  let lastTs = 0;
+  let rafId = null;
+
+  function spawnItem() {
+    const isBad = Math.random() < 0.28;
+    const pool = isBad ? badItems : goodItems;
+    items.push({
+      x: 26 + Math.random() * (canvas.width - 52),
+      y: -18,
+      vy: 115 + Math.random() * 80,
+      emoji: pool[Math.floor(Math.random() * pool.length)],
+      isBad
+    });
+  }
+
+  function updateScore(delta, x, y) {
+    score = Math.max(0, score + delta);
+    scoreEl.textContent = `Puntos: ${score} / ${targetScore}`;
+    popups.push({
+      text: delta > 0 ? `+${delta} 🍲` : `${delta} 💥`,
+      x,
+      y,
+      life: 0.7,
+      good: delta > 0
+    });
+    if (score >= targetScore && !finished) {
+      finished = true;
+      controls.hidden = true;
+      showWinFeedback(feedback, dayData, onComplete);
+    }
+  }
+
+  function step(ts) {
+    if (!lastTs) lastTs = ts;
+    const dt = Math.min(0.05, (ts - lastTs) / 1000);
+    lastTs = ts;
+
+    if (!finished) {
+      if (moveDir !== 0) {
+        potX = Math.max(potHalfWidth, Math.min(canvas.width - potHalfWidth, potX + moveDir * 270 * dt));
+      }
+
+      spawnAcc += dt;
+      if (spawnAcc >= 0.62) {
+        spawnAcc = 0;
+        spawnItem();
+      }
+
+      for (let i = items.length - 1; i >= 0; i--) {
+        const it = items[i];
+        it.y += it.vy * dt;
+
+        const hitY = it.y >= potY - 22 && it.y <= potY + 14;
+        const hitX = Math.abs(it.x - potX) <= potHalfWidth + 8;
+        if (hitY && hitX) {
+          items.splice(i, 1);
+          updateScore(it.isBad ? -2 : 1, it.x, potY - 24);
+          continue;
+        }
+        if (it.y > canvas.height + 24) {
+          items.splice(i, 1);
+        }
+      }
+    }
+
+    for (let i = popups.length - 1; i >= 0; i--) {
+      popups[i].y -= 36 * dt;
+      popups[i].life -= dt;
+      if (popups[i].life <= 0) popups.splice(i, 1);
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Ingredientes cayendo
+    ctx.font = "26px system-ui, Apple Color Emoji, Segoe UI Emoji, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (const it of items) {
+      ctx.fillText(it.emoji, it.x, it.y);
+    }
+
+    // Olla de Nori
+    ctx.fillStyle = "rgba(245, 216, 125, 0.16)";
+    ctx.beginPath();
+    ctx.ellipse(potX, potY + 6, potHalfWidth + 6, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = "38px system-ui, Apple Color Emoji, Segoe UI Emoji, sans-serif";
+    ctx.fillText("🍲", potX, potY);
+
+    // Popups de puntuación
+    ctx.font = "bold 15px system-ui, sans-serif";
+    for (const p of popups) {
+      ctx.fillStyle = p.good ? "#9cf5b8" : "#ff9aa4";
+      ctx.fillText(p.text, p.x, p.y);
+    }
+
+    if (!finished) {
+      rafId = requestAnimationFrame(step);
+    }
+  }
+
+  function movePotToPointer(clientX) {
+    if (finished) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * canvas.width;
+    potX = Math.max(potHalfWidth, Math.min(canvas.width - potHalfWidth, x));
+  }
+
+  let dragging = false;
+  canvas.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    movePotToPointer(e.clientX);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (dragging) movePotToPointer(e.clientX);
+  });
+  canvas.addEventListener("pointerup", () => {
+    dragging = false;
+  });
+  canvas.addEventListener("pointercancel", () => {
+    dragging = false;
+  });
+
+  leftBtn.addEventListener("pointerdown", () => {
+    moveDir = -1;
+  });
+  rightBtn.addEventListener("pointerdown", () => {
+    moveDir = 1;
+  });
+  const stopMove = () => {
+    moveDir = 0;
+  };
+  leftBtn.addEventListener("pointerup", stopMove);
+  leftBtn.addEventListener("pointerleave", stopMove);
+  leftBtn.addEventListener("pointercancel", stopMove);
+  leftBtn.addEventListener("blur", stopMove);
+  rightBtn.addEventListener("pointerup", stopMove);
+  rightBtn.addEventListener("pointerleave", stopMove);
+  rightBtn.addEventListener("pointercancel", stopMove);
+  rightBtn.addEventListener("blur", stopMove);
+
+  const onKeyDown = (e) => {
+    if (e.key === "ArrowLeft") moveDir = -1;
+    if (e.key === "ArrowRight") moveDir = 1;
+  };
+  const onKeyUp = (e) => {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") moveDir = 0;
+  };
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
+
+  spawnItem();
+  rafId = requestAnimationFrame(step);
+
+  return () => {
+    cancelAnimationFrame(rafId);
+    document.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("keyup", onKeyUp);
+  };
+}
+
+/**
+ * 3C. SIMON SAYS NAVIDEÑO: LUCES Y CAMPANAS (5 RONDAS)
+ */
+function renderSimon(container, dayData, onComplete) {
+  const totalRounds = dayData.rounds || 5;
+  const padsInfo = [
+    { emoji: "🔔", freq: 261.63, name: "Rojo" },
+    { emoji: "🎄", freq: 329.63, name: "Verde" },
+    { emoji: "⭐", freq: 392.0, name: "Dorado" },
+    { emoji: "❄️", freq: 523.25, name: "Azul" }
+  ];
+
+  const wrap = document.createElement("div");
+  wrap.className = "simon-wrapper";
+
+  const hud = document.createElement("div");
+  hud.className = "game-hud";
+  const roundEl = document.createElement("span");
+  roundEl.textContent = `Ronda: 0 / ${totalRounds}`;
+  const stateEl = document.createElement("span");
+  stateEl.textContent = "Pulsa Empezar";
+  hud.append(roundEl, stateEl);
+
+  const grid = document.createElement("div");
+  grid.className = "simon-grid";
+
+  const startBtn = document.createElement("button");
+  startBtn.type = "button";
+  startBtn.className = "btn-gold";
+  startBtn.textContent = "▶️ Empezar secuencia";
+
+  const feedback = document.createElement("div");
+  feedback.className = "game-feedback";
+  feedback.setAttribute("aria-live", "polite");
+
+  const sequence = [];
+  let userStep = 0;
+  let acceptingInput = false;
+  let won = false;
+  const timers = [];
+
+  const padButtons = padsInfo.map((info, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "simon-pad";
+    btn.dataset.pad = String(idx);
+    btn.textContent = info.emoji;
+    btn.setAttribute("aria-label", `Campana ${info.name}`);
+    btn.disabled = true;
+
+    btn.addEventListener("click", () => {
+      if (!acceptingInput || won) return;
+      flashPad(idx, 240);
+      if (idx === sequence[userStep]) {
+        userStep += 1;
+        if (userStep === sequence.length) {
+          acceptingInput = false;
+          setPadsDisabled(true);
+          if (sequence.length >= totalRounds) {
+            won = true;
+            stateEl.textContent = "¡Completado!";
+            showWinFeedback(feedback, dayData, onComplete);
+          } else {
+            stateEl.textContent = "¡Bien! Siguiente...";
+            const t = setTimeout(nextRound, 700);
+            timers.push(t);
+          }
+        }
+      } else {
+        acceptingInput = false;
+        setPadsDisabled(true);
+        stateEl.textContent = "¡Ups, casi!";
+        feedback.className = "game-feedback is-hint";
+        feedback.textContent = "Te despistaste un poquito 😄 Pulsa el botón para repetir esta ronda.";
+        startBtn.hidden = false;
+        startBtn.textContent = "🔄 Repetir secuencia";
+      }
+    });
+
+    grid.appendChild(btn);
+    return btn;
+  });
+
+  function setPadsDisabled(disabled) {
+    padButtons.forEach((b) => {
+      b.disabled = disabled;
+    });
+  }
+
+  function flashPad(idx, duration = 360) {
+    const btn = padButtons[idx];
+    if (!btn) return;
+    btn.classList.add("is-lit");
+    playGameTone(padsInfo[idx].freq, duration);
+    const t = setTimeout(() => {
+      btn.classList.remove("is-lit");
+    }, duration);
+    timers.push(t);
+  }
+
+  function clearTimers() {
+    while (timers.length > 0) {
+      clearTimeout(timers.pop());
+    }
+  }
+
+  function playSequence() {
+    clearTimers();
+    acceptingInput = false;
+    setPadsDisabled(true);
+    startBtn.hidden = true;
+    feedback.className = "game-feedback";
+    feedback.textContent = "";
+    roundEl.textContent = `Ronda: ${sequence.length} / ${totalRounds}`;
+    stateEl.textContent = "👀 Observa...";
+
+    sequence.forEach((padIdx, i) => {
+      const t = setTimeout(() => {
+        flashPad(padIdx, 360);
+      }, 450 + i * 540);
+      timers.push(t);
+    });
+
+    const readyTimer = setTimeout(() => {
+      acceptingInput = true;
+      userStep = 0;
+      setPadsDisabled(false);
+      stateEl.textContent = `👆 ¡Tu turno! (${sequence.length})`;
+    }, 450 + sequence.length * 540 + 80);
+    timers.push(readyTimer);
+  }
+
+  function nextRound() {
+    sequence.push(Math.floor(Math.random() * padsInfo.length));
+    playSequence();
+  }
+
+  startBtn.addEventListener("click", () => {
+    // Desbloquea AudioContext síncronamente dentro del gesto de usuario (iOS Safari)
+    unlockGameAudio();
+    if (sequence.length === 0) {
+      nextRound();
+    } else {
+      playSequence();
+    }
+  });
+
+  wrap.append(hud, grid, startBtn, feedback);
+  container.appendChild(wrap);
+
+  return () => {
+    timers.forEach(clearTimeout);
+  };
+}
+
+/**
+ * 3D. ATRAPA AL GRINCH (WHACK-A-GRINCH 3x3)
+ */
+function renderWhack(container, dayData, onComplete) {
+  const targetScore = dayData.targetScore || 10;
+  const friends = ["🐶", "🦌", "🐱"];
+
+  const wrap = document.createElement("div");
+  wrap.className = "whack-wrapper";
+
+  const hud = document.createElement("div");
+  hud.className = "game-hud";
+  const scoreEl = document.createElement("span");
+  scoreEl.textContent = `Grinches: 0 / ${targetScore}`;
+  const infoEl = document.createElement("span");
+  infoEl.textContent = "Toca 👹 · Evita 🐶🦌";
+  hud.append(scoreEl, infoEl);
+
+  const grid = document.createElement("div");
+  grid.className = "whack-grid";
+
+  const feedback = document.createElement("div");
+  feedback.className = "game-feedback";
+  feedback.setAttribute("aria-live", "polite");
+
+  let score = 0;
+  let won = false;
+  const holeStates = Array(9).fill(null);
+  const holeTokens = Array(9).fill(0);
+  const holeTimers = [];
+
+  const holeButtons = Array.from({ length: 9 }, (_, idx) => {
+    const hole = document.createElement("button");
+    hole.type = "button";
+    hole.className = "whack-hole";
+    hole.setAttribute("aria-label", `Chimenea ${idx + 1}`);
+    hole.textContent = "🎄";
+
+    hole.addEventListener("click", () => {
+      if (won) return;
+      const current = holeStates[idx];
+      if (!current) return;
+
+      holeStates[idx] = null;
+      const clickToken = ++holeTokens[idx];
+      hole.classList.remove("is-grinch", "is-friend");
+
+      if (current === "grinch") {
+        score += 1;
+        hole.textContent = "💥";
+        scoreEl.textContent = `Grinches: ${score} / ${targetScore}`;
+        if (score >= targetScore) {
+          won = true;
+          clearInterval(spawnInterval);
+          showWinFeedback(feedback, dayData, onComplete);
+        }
+      } else {
+        score = Math.max(0, score - 1);
+        hole.textContent = "💔";
+        scoreEl.textContent = `Grinches: ${score} / ${targetScore}`;
+        feedback.className = "game-feedback is-hint";
+        feedback.textContent = "¡Ay! Ese era un animalito amigo, cuidado 😄";
+      }
+
+      const resetT = setTimeout(() => {
+        if (!holeStates[idx] && holeTokens[idx] === clickToken) {
+          hole.textContent = "🎄";
+        }
+      }, 220);
+      holeTimers.push(resetT);
+    });
+
+    grid.appendChild(hole);
+    return hole;
+  });
+
+  function spawnOne() {
+    if (won) return;
+    const emptyIndices = holeStates
+      .map((val, idx) => (val === null ? idx : -1))
+      .filter((idx) => idx !== -1);
+    if (emptyIndices.length === 0) return;
+
+    const idx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+    const isGrinch = Math.random() < 0.72;
+    holeStates[idx] = isGrinch ? "grinch" : "friend";
+    const spawnToken = ++holeTokens[idx];
+
+    const hole = holeButtons[idx];
+    hole.classList.remove("is-grinch", "is-friend");
+    if (isGrinch) {
+      hole.classList.add("is-grinch");
+      hole.textContent = "👹";
+    } else {
+      hole.classList.add("is-friend");
+      hole.textContent = friends[Math.floor(Math.random() * friends.length)];
+    }
+
+    const hideT = setTimeout(() => {
+      if (holeStates[idx] && holeTokens[idx] === spawnToken) {
+        holeStates[idx] = null;
+        hole.classList.remove("is-grinch", "is-friend");
+        hole.textContent = "🎄";
+      }
+    }, 950);
+    holeTimers.push(hideT);
+  }
+
+  const spawnInterval = setInterval(spawnOne, 620);
+  spawnOne();
+
+  wrap.append(hud, grid, feedback);
+  container.appendChild(wrap);
+
+  return () => {
+    clearInterval(spawnInterval);
+    holeTimers.forEach(clearTimeout);
+  };
 }
 
 /**
@@ -361,9 +951,22 @@ function renderWordle(container, dayData, onComplete) {
   const wrapper = document.createElement("div");
   wrapper.className = "wordle-wrapper";
 
-  const hintBox = document.createElement("p");
-  hintBox.className = "wordle-hint";
-  hintBox.textContent = `💡 ${dayData.hint}`;
+  const hintWrap = document.createElement("div");
+  hintWrap.className = "wordle-hint-box";
+  const hintBtn = document.createElement("button");
+  hintBtn.type = "button";
+  hintBtn.className = "btn-outline btn-sm wordle-hint-btn";
+  hintBtn.disabled = true;
+  hintBtn.textContent = "💡 Pedir pista (tras 3 intentos)";
+  const hintTextEl = document.createElement("p");
+  hintTextEl.className = "wordle-hint";
+  hintTextEl.hidden = true;
+  hintTextEl.textContent = `💡 ${dayData.hint}`;
+  hintBtn.addEventListener("click", () => {
+    hintTextEl.hidden = false;
+    hintBtn.hidden = true;
+  });
+  hintWrap.append(hintBtn, hintTextEl);
 
   const board = document.createElement("div");
   board.className = "wordle-board";
@@ -435,6 +1038,10 @@ function renderWordle(container, dayData, onComplete) {
     });
     statusMsg.className = "game-feedback";
     statusMsg.innerHTML = "";
+    hintBtn.disabled = true;
+    hintBtn.hidden = false;
+    hintBtn.textContent = "💡 Pedir pista (tras 3 intentos)";
+    hintTextEl.hidden = true;
   }
 
   function submitGuess() {
@@ -474,6 +1081,11 @@ function renderWordle(container, dayData, onComplete) {
 
     currentRow += 1;
     currentGuess = "";
+
+    if (currentRow >= 3 && hintTextEl.hidden) {
+      hintBtn.disabled = false;
+      hintBtn.textContent = "💡 Mostrar pista ahora";
+    }
 
     if (currentRow >= maxAttempts) {
       gameOver = true;
@@ -540,7 +1152,7 @@ function renderWordle(container, dayData, onComplete) {
   };
   document.addEventListener("keydown", onPhysicalKey);
 
-  wrapper.append(hintBox, board, statusMsg, keyboardEl);
+  wrapper.append(hintWrap, board, statusMsg, keyboardEl);
   container.appendChild(wrapper);
 
   return () => {
@@ -818,7 +1430,7 @@ function renderPuzzle(container, dayData, onComplete) {
 }
 
 /**
- * 7. GRAN FINAL DÍA 24: COFRE SECRETO CON CÓDIGO "NORITA"
+ * 7. GRAN FINAL DÍA 24: COFRE SECRETO CON CÓDIGO "M7C2V0"
  */
 function renderFinale24(container, dayData, config, stateApi, daysData, onComplete) {
   const currentState = stateApi.getState();
@@ -876,7 +1488,7 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
       <p class="finale-intro">${dayData.message}</p>
       <div class="vault-slots">${slotsHtml}</div>
       <form class="vault-form" id="vault-unlock-form">
-        <label for="vault-code-input" class="vault-label">Código secreto de 6 letras:</label>
+        <label for="vault-code-input" class="vault-label">Código secreto de 6 caracteres:</label>
         <input
           id="vault-code-input"
           class="vault-input"
@@ -889,7 +1501,7 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
         <div class="vault-buttons">
           <button type="submit" class="btn-gold">🔓 Abrir Cofre de Nochebuena</button>
           <button type="button" id="vault-autofill-btn" class="btn-outline">
-            ✨ Rellenar con mis fragmentos (${fragInfo.unlockedCount}/${fragInfo.totalCount})
+            ✨ Rellenar con mis claves (${fragInfo.unlockedCount}/${fragInfo.totalCount})
           </button>
         </div>
         <p id="vault-feedback" class="game-feedback" aria-live="polite"></p>
@@ -910,7 +1522,7 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
     input.focus();
     if (!fragInfo.allUnlocked) {
       feedback.className = "game-feedback is-hint";
-      feedback.textContent = `Aún te faltan letras por descubrir (tienes ${fragInfo.unlockedCount} de ${fragInfo.totalCount}), ¡pero puedes completar las que faltan si las adivinas!`;
+      feedback.textContent = `Aún te faltan claves por descubrir (tienes ${fragInfo.unlockedCount} de ${fragInfo.totalCount}). Completa los días 4, 8, 12, 16, 20 y 23 para reunir el código.`;
     }
   });
 
@@ -923,7 +1535,7 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
     } else {
       feedback.className = "game-feedback is-hint";
       feedback.textContent =
-        "Ese no es el código mágico... ¡Pista: es un diminutivo muy bonito de Nora de 6 letras! ❤️";
+        "Código incorrecto. Necesitas reunir los 6 caracteres exactos de los días 4, 8, 12, 16, 20 y 23 🔒";
       input.focus();
     }
   });
@@ -950,9 +1562,14 @@ export function renderDayExperience({
     case "voucher":
       renderVoucher(container, dayData, config, stateApi, onComplete);
       return null;
-    case "quiz":
-      renderQuiz(container, dayData, onComplete);
-      return null;
+    case "memory":
+      return renderMemory(container, dayData, onComplete);
+    case "catcher":
+      return renderCatcher(container, dayData, onComplete);
+    case "simon":
+      return renderSimon(container, dayData, onComplete);
+    case "whack":
+      return renderWhack(container, dayData, onComplete);
     case "wordle":
       return renderWordle(container, dayData, onComplete);
     case "scratch":

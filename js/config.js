@@ -14,26 +14,26 @@ export const CONFIG = {
   pinCode: "0207",
   pinHint: "Nuestra fecha especial (4 dígitos)",
 
-  // Código secreto para activar el Modo Creador y previsualizar cualquier día antes de tiempo
+  // Código secreto para activar el Modo Creador (toca 5 veces seguidas el título "El Adviento de Nori ✨" o abre ?creador=1)
   creatorCode: "VICENT",
 
   // Teléfono de Vicent en formato internacional (sin '+' ni espacios) para los vales de WhatsApp
   whatsappNumber: "34626661315",
 
-  // Palabra secreta formada por los 6 fragmentos dorados (días 4, 8, 12, 16, 20 y 23)
-  secretWord: "NORITA",
+  // Código secreto de 6 caracteres (días 4, 8, 12, 16, 20 y 23): M-7-C-2-V-0
+  secretWord: "M7C2V0",
 
   // Año del calendario de adviento (se desbloquea del 1 al 24 de diciembre de este año)
   targetYear: 2026,
 
-  // Mensaje final del Día 24 tras introducir el código NORITA
-  finaleLetterTitle: "¡Código NORITA verificado! Tu regalo real te está esperando 🎁",
+  // Mensaje final del Día 24 tras introducir el código M7C2V0
+  finaleLetterTitle: "¡Código M7C2V0 verificado! Tu regalo real te está esperando 🎁",
   finaleLetterBody:
     "Feliz Navidad, mi Nori preciosa ❤️ Si has llegado hasta aquí después de estos 24 días, es hora de la sorpresa de verdad en el mundo real.",
   physicalGiftInstruction:
-    "Acércate ahora mismo a Vicent, dale un abrazo gigante y susúrrale la contraseña secreta «NORITA» para que te entregue tu regalo de Navidad en mano (o busca junto al árbol de Navidad 😉).",
+    "Acércate ahora mismo a Vicent, dale un abrazo gigante y susúrrale la contraseña secreta «M7C2V0» para que te entregue tu regalo de Navidad en mano (o busca junto al árbol de Navidad 😉).",
   finaleWhatsAppText:
-    "¡Vicent! Acabo de descifrar el código secreto NORITA en el Día 24 de mi calendario de adviento 🎁✨ ¡Quiero reclamar mi gran regalo de Navidad!"
+    "¡Vicent! Acabo de descifrar el código secreto M7C2V0 en el Día 24 de mi calendario de adviento 🎁✨ ¡Quiero reclamar mi gran regalo de Navidad!"
 };
 
 /**
@@ -41,11 +41,14 @@ export const CONFIG = {
  * Tipos disponibles:
  * - "polaroid": Foto (assets/photos/dia-X.jpg o ilustración SVG romántica) que gira en 3D con dedicatoria y audio opcional.
  * - "voucher": Ticket dorado canjeable con botón de marcado y envío directo por WhatsApp a Vicent.
- * - "quiz": Pregunta tipo test sobre vuestra historia.
- * - "wordle": Mini-Wordle de 5 letras con pista.
+ * - "wordle": Mini-Wordle de 5 letras (sin spoilers; pista opcional tras 3 intentos).
+ * - "memory": Juego de encontrar 6 parejas en tablero 4x3.
+ * - "catcher": Arcade táctil en canvas de atrapar ingredientes para la sopa.
+ * - "simon": Juego musical/luminoso tipo Simon Says de 5 rondas.
+ * - "whack": Juego arcade de reflejos para atrapar al Grinch.
  * - "scratch": Tarjeta "Rasca y gana" con el dedo/ratón.
- * - "puzzle": Puzzle deslizante/intercambiable 3x3 con foto o ilustración.
- * - "finale": Día 24 con caja fuerte para introducir el código secreto NORITA.
+ * - "puzzle": Puzzle intercambiable 3x3 con foto o ilustración.
+ * - "finale": Día 24 con caja fuerte para introducir el código secreto M7C2V0.
  */
 export const DAYS_DATA = [
   {
@@ -59,20 +62,17 @@ export const DAYS_DATA = [
     fallbackTheme: "couple-lights",
     rewardTitle: "Carta de bienvenida",
     message:
-      "Hola Nori ❤️ He programado este calendario de adviento pieza a pieza para ti. Desde que nuestros caminos se cruzaron en Les Coves de Vinromà hasta hoy, cada día contigo es un regalo. Abre una puerta cada mañana... y guarda bien los fragmentos dorados para Nochebuena. Te quiero, Vicent."
+      "Hola Nori ❤️ He programado este calendario de adviento pieza a pieza para ti. Desde que nuestros caminos se cruzaron en Les Coves de Vinromà hasta hoy, cada día contigo es un regalo. Abre una puerta cada mañana... y guarda bien las 6 claves doradas para Nochebuena. Te quiero, Vicent."
   },
   {
     day: 2,
-    type: "quiz",
-    title: "¿Cuánto recuerdas de nuestro principio? 💫",
-    subtitle: "Pregunta sobre nuestra historia",
-    question: "¿Dónde tuvimos nuestra primera cita oficial?",
-    options: ["Torreblanca", "Peñíscola", "Castellón", "Benicàssim"],
-    correctIndex: 0,
-    wrongHint: "Pista: está cerquita del mar y empezó todo con mucha magia...",
+    type: "memory",
+    title: "Parejas de Invierno 🃏",
+    subtitle: "Encuentra las 6 parejas escondidas",
+    pairs: ["🍲", "✈️", "🐾", "🌯", "🎬", "❤️"],
     rewardTitle: "¡Memoria de 10!",
     message:
-      "¡Siii, en Torreblanca! Todavía me acuerdo de los nervios y de lo mucho que me gustó hablar contigo desde el primer minuto."
+      "¡Memoria de 10, Nori! Igual que estas parejas, me acuerdo perfecto de nuestra primera cita en Torreblanca y de las ganas que tenía de volver a verte ❤️"
   },
   {
     day: 3,
@@ -90,14 +90,14 @@ export const DAYS_DATA = [
   {
     day: 4,
     type: "wordle",
-    fragmentLetter: "N",
-    title: "Wordle viajero: ¡Prepara la maleta! ✈️",
-    subtitle: "Adivina la palabra de 5 letras",
+    fragmentLetter: "M",
+    title: "Reto Wordle #1 🟩",
+    subtitle: "Adivina la palabra oculta de 5 letras",
     word: "MILAN",
-    hint: "Tiene 5 letras: nuestro destino de este puente de diciembre 🇮🇹",
-    rewardTitle: "¡Fragmento N desbloqueado!",
+    hint: "Es una ciudad famosa del norte de Italia, destino de puente de diciembre",
+    rewardTitle: "¡Clave M desbloqueada!",
     message:
-      "¡Nos vamos a Milán este puente, Nori! 🇮🇹✨ Qué ganas de recorrer cada calle contigo. Además, has desbloqueado el 1.er fragmento secreto: la letra N."
+      "¡Era MILAN! Qué ganas de recorrer cada calle contigo este puente 🇮🇹✨ Has desbloqueado el 1.er carácter del código secreto: M."
   },
   {
     day: 5,
@@ -139,23 +139,14 @@ export const DAYS_DATA = [
   },
   {
     day: 8,
-    type: "quiz",
-    fragmentLetter: "O",
-    title: "El test gastronómico de Nori 🍲",
-    subtitle: "Acierta para ganar el 2.º fragmento",
-    question:
-      "Si hace frío en diciembre y Nori puede pedir su plato reconfortante favorito del mundo, ¿cuál elige sin dudar?",
-    options: [
-      "Una buena sopa calentita 🍲",
-      "Sushi helado 🍣",
-      "Gazpacho con hielo 🍅",
-      "Ensalada de lechuga 🥗"
-    ],
-    correctIndex: 0,
-    wrongHint: "Pista: lleva cuchara, sale humeante y te encanta hacerla en invierno...",
-    rewardTitle: "¡Fragmento O desbloqueado!",
+    type: "catcher",
+    fragmentLetter: "7",
+    title: "¡La Sopa Calentita de Nori! 🍲",
+    subtitle: "Desliza la olla y atrapa 10 ingredientes ricos (evita los calcetines y bombas)",
+    targetScore: 10,
+    rewardTitle: "¡Sopa perfecta! Clave 7 desbloqueada",
     message:
-      "¡Nadie ama la sopa tanto como mi Nori! Hoy te has ganado un plato bien calentito hecho con amor y el 2.º fragmento del código: la letra O."
+      "¡Nadie hace ni disfruta la sopa tanto como tú, Nori! 🍲❤️ Has desbloqueado el 2.º carácter del código secreto: 7."
   },
   {
     day: 9,
@@ -183,10 +174,10 @@ export const DAYS_DATA = [
   {
     day: 11,
     type: "wordle",
-    title: "Wordle con raíces especiales 🏡",
-    subtitle: "Palabra de 5 letras",
+    title: "Reto Wordle #2 🟩",
+    subtitle: "Palabra oculta de 5 letras",
     word: "COVES",
-    hint: "5 letras: el pueblo de Vicent donde nos conocimos (Les ... de Vinromà)",
+    hint: "Tiene que ver con el lugar donde se cruzaron nuestros caminos",
     rewardTitle: "¡Palabra acertada!",
     message:
       "¡Les Coves de Vinromà! Qué casualidad tan bonita que nos conociéramos en Coves y que tu rincón favorito sea Cuevas de Cañart ❤️"
@@ -194,15 +185,15 @@ export const DAYS_DATA = [
   {
     day: 12,
     type: "scratch",
-    fragmentLetter: "R",
+    fragmentLetter: "C",
     title: "Ecuador de diciembre: Rasca tu mimo de hoy ✨",
-    subtitle: "Rasca para descubrir premio + fragmento",
-    scratchHeadline: "💆‍♀️ Masaje relajante + Letra R",
+    subtitle: "Rasca para descubrir premio + clave secreta",
+    scratchHeadline: "💆‍♀️ Masaje relajante + Clave C",
     scratchPrize:
-      "💆‍♀️ ¡Vale por un masaje relajante de 25 minutos sin prisas! + 3.er fragmento secreto: la letra R.",
-    rewardTitle: "¡Fragmento R desbloqueado!",
+      "💆‍♀️ ¡Vale por un masaje relajante de 25 minutos sin prisas! + 3.er carácter secreto: C.",
+    rewardTitle: "¡Clave C desbloqueada!",
     message:
-      "Has llegado a la mitad del calendario, Nori. Disfruta de tu masaje cuando quieras y guarda la letra R en tu colección secreta."
+      "Has llegado a la mitad del calendario, Nori. Disfruta de tu masaje cuando quieras y guarda el carácter C en tu colección secreta."
   },
   {
     day: 13,
@@ -219,22 +210,13 @@ export const DAYS_DATA = [
   },
   {
     day: 14,
-    type: "quiz",
-    title: "Coincidencias del destino ✨",
-    subtitle: "Un guiño a nuestros pueblos",
-    question:
-      "¿Qué curioso detalle tienen en común el pueblo donde nos conocimos y tu pueblo favorito?",
-    options: [
-      "¡Los dos se llaman Cuevas / Coves!",
-      "Los dos tienen aeropuerto internacional",
-      "En los dos se habla italiano",
-      "Los dos tienen playa tropical"
-    ],
-    correctIndex: 0,
-    wrongHint: "Fíjate bien en los nombres: Les Coves de Vinromà y Cuevas de Cañart...",
-    rewardTitle: "¡Destino puro!",
+    type: "simon",
+    title: "Luces de Cuevas a Coves 🔔",
+    subtitle: "Memoriza y repite la secuencia navideña (5 rondas)",
+    rounds: 5,
+    rewardTitle: "¡Oído y memoria mágicos!",
     message:
-      "¡De Les Coves de Vinromà a Cuevas de Cañart! Estábamos destinados desde el nombre de nuestros pueblos."
+      "¡De Les Coves de Vinromà a Cuevas de Cañart! Hasta nuestros pueblos parecían destinados a coincidir ✨"
   },
   {
     day: 15,
@@ -252,14 +234,14 @@ export const DAYS_DATA = [
   {
     day: 16,
     type: "wordle",
-    fragmentLetter: "I",
-    title: "Wordle de cucharón y puchero 🥄",
-    subtitle: "Acierta para conseguir el 4.º fragmento",
+    fragmentLetter: "2",
+    title: "Reto Wordle #3 🟩",
+    subtitle: "Palabra oculta de 5 letras",
     word: "SOPAS",
-    hint: "5 letras (en plural): el plato de cuchara que vuelve loca a Nori",
-    rewardTitle: "¡Fragmento I desbloqueado!",
+    hint: "Está en plural y se toma bien caliente con cuchara",
+    rewardTitle: "¡Clave 2 desbloqueada!",
     message:
-      "¡SOPAS! No podía faltar en tu calendario de adviento 😄 Y con esto consigues el 4.º fragmento secreto: la letra I."
+      "¡SOPAS! No podía faltar en tu calendario 😄 Y con esto consigues el 4.º carácter secreto: 2."
   },
   {
     day: 17,
@@ -300,28 +282,25 @@ export const DAYS_DATA = [
   {
     day: 20,
     type: "voucher",
-    fragmentLetter: "T",
-    title: "Cena romántica a la luz de las velas 🍷🕯️",
-    subtitle: "Vale dorado + 5.º fragmento secreto",
-    voucherTitle: "Vale por una cena romántica donde tú elijas (invita Vicent) 🍷🕯️",
-    voucherCode: "NORI-CENA-20",
-    rewardTitle: "¡Fragmento T desbloqueado!",
+    fragmentLetter: "V",
+    title: "¡Noche de Burrito o Burguer! 🌯🍔",
+    subtitle: "Vale dorado + 5.º carácter secreto",
+    voucherTitle: "Vale por un buen burrito o una burguer bien rica (invita Vicent) 🌯🍔",
+    voucherCode: "NORI-BURGER-20",
+    rewardTitle: "¡Clave V desbloqueada!",
     message:
-      "Ponte guapa que nos vamos a cenar a tu restaurante favorito. Además, ¡tienes el 5.º fragmento secreto: la letra T!",
+      "Nada de etiquetas ni platos diminutos: hoy te invito a un buen burrito o a una hamburguesa de las que se comen con las dos manos. ¡Tú eliges cuál cae! Además tienes la clave V.",
     whatsappText:
-      "¡Hola Vicent! Canjeo mi vale del Día 20 (NORI-CENA-20): ¡elijo restaurante para nuestra cena romántica! 🍷🕯️✨"
+      "¡Hola Vicent! Canjeo mi vale del Día 20 (NORI-BURGER-20): ¡hoy me invitas a un burrito o una burguer! 🌯🍔😋"
   },
   {
     day: 21,
-    type: "quiz",
-    title: "Llega el invierno ❄️",
-    subtitle: "Pregunta oficial del 21 de diciembre",
-    question: "¿Quién es la persona que más ganas tiene de pasar todas las Navidades contigo?",
-    options: ["Vicent ❤️", "El Grinch", "Papá Noel", "El alcalde de Milán"],
-    correctIndex: 0,
-    wrongHint: "¡Pista fácil! Empieza por V y te quiere muchísimo...",
-    rewardTitle: "¡Respuesta correcta!",
-    message: "¡Obvio que yo! No cambiaría un invierno a tu lado por nada del mundo."
+    type: "whack",
+    title: "¡Que el Grinch no robe la Navidad! 👹",
+    subtitle: "Toca 10 Grinches rápido (¡cuidado con los animalitos amigos!)",
+    targetScore: 10,
+    rewardTitle: "¡Navidad salvada!",
+    message: "¡Reflejos de campeona! Ni el Grinch nos quita nuestras Navidades juntos ❤️🎄"
   },
   {
     day: 22,
@@ -339,23 +318,23 @@ export const DAYS_DATA = [
   {
     day: 23,
     type: "scratch",
-    fragmentLetter: "A",
-    title: "¡La víspera de Nochebuena! Rasca para el último fragmento 🗝️",
-    subtitle: "Consigue la última letra del código secreto",
-    scratchHeadline: "🗝️ ¡Último fragmento: Letra A!",
+    fragmentLetter: "0",
+    title: "¡La víspera de Nochebuena! Rasca la última clave 🗝️",
+    subtitle: "Consigue el último carácter del código secreto",
+    scratchHeadline: "🗝️ ¡Última clave: 0!",
     scratchPrize:
-      "🎉 ¡Has conseguido el 6.º y último fragmento: la letra A! Mañana día 24 podrás usar el código completo (NORITA) para abrir tu gran sorpresa.",
-    rewardTitle: "¡Código NORITA completo!",
+      "🎉 ¡Has conseguido el 6.º y último carácter secreto: 0! Mañana día 24 podrás usar el código completo (M7C2V0) para abrir tu gran sorpresa.",
+    rewardTitle: "¡Código M7C2V0 completo!",
     message:
-      "Ya tienes todas las piezas del código secreto: N · O · R · I · T · A. ¡Mañana se abre la puerta más especial!"
+      "Ya tienes todas las piezas del código secreto: M · 7 · C · 2 · V · 0. ¡Mañana se abre la puerta más especial!"
   },
   {
     day: 24,
     type: "finale",
     title: "¡Feliz Nochebuena, Nori! El Cofre Secreto 🎁🎄",
-    subtitle: "Introduce tu código secreto de 6 letras",
+    subtitle: "Introduce tu código secreto de 6 caracteres",
     rewardTitle: "El Gran Regalo de Nochebuena",
     message:
-      "¡Has llegado al día 24! Introduce las 6 letras doradas que has reunido durante diciembre para abrir tu cofre."
+      "¡Has llegado al día 24! Introduce los 6 caracteres secretos que has reunido durante diciembre para abrir tu cofre."
   }
 ];

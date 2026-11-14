@@ -36,7 +36,7 @@ const dialogBody = document.getElementById("dialog-body");
 const dialogCloseBtn = document.getElementById("dialog-close-btn");
 
 const creatorDialog = document.getElementById("creator-dialog");
-const creatorOpenBtn = document.getElementById("creator-open-btn");
+const heroTitle = document.querySelector(".hero-title");
 const creatorCloseBtn = document.getElementById("creator-close-btn");
 const creatorForm = document.getElementById("creator-form");
 const creatorCodeInput = document.getElementById("creator-code-input");
@@ -114,14 +114,28 @@ function setupDialogSupport(dialogEl) {
 setupDialogSupport(dayDialog);
 setupDialogSupport(creatorDialog);
 
-// Fallback por si el navegador no soporta declarative command="show-modal" / commandfor
-if (!("commandForElement" in HTMLButtonElement.prototype)) {
-  creatorOpenBtn.addEventListener("click", () => {
-    if (!creatorDialog.open) {
-      creatorDialog.showModal();
-    }
-  });
+// Acceso secreto al Modo Creador: 5 toques seguidos en el título principal
+let titleTapCount = 0;
+let titleTapTimer = null;
+
+function openCreatorModal() {
+  if (!creatorDialog.open) {
+    creatorDialog.showModal();
+  }
 }
+
+heroTitle.addEventListener("click", () => {
+  titleTapCount += 1;
+  clearTimeout(titleTapTimer);
+  if (titleTapCount >= 5) {
+    titleTapCount = 0;
+    openCreatorModal();
+    return;
+  }
+  titleTapTimer = setTimeout(() => {
+    titleTapCount = 0;
+  }, 2500);
+});
 
 dialogCloseBtn.addEventListener("click", () => closeTopLayer(dayDialog));
 creatorCloseBtn.addEventListener("click", () => closeTopLayer(creatorDialog));
@@ -141,11 +155,7 @@ creatorDialog.addEventListener("close", () => {
   creatorFeedback.textContent = "";
 });
 
-/* ==================== MELODÍA NAVIDEÑA SUAVE (WEB AUDIO API SIN MP3 EXTERNOS) ==================== */
-let audioCtx = null;
-let musicInterval = null;
-let noteIndex = 0;
-
+/* ==================== MELODÍA NAVIDEÑA EN CAJA DE MÚSICA (WAV PCM + <audio>) ==================== */
 const CAROLS_NOTES = [
   329.63, 329.63, 329.63, 0,
   329.63, 329.63, 329.63, 0,
@@ -155,41 +165,107 @@ const CAROLS_NOTES = [
   392.0, 392.0, 349.23, 293.66, 261.63, 0
 ];
 
-function playSoftNote(freq) {
-  if (!freq || !audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-  gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.045, audioCtx.currentTime + 0.04);
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.42);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.45);
+let musicAudio = null;
+let musicObjectUrl = null;
+
+function createChristmasCarolWavUrl() {
+  if (musicObjectUrl) return musicObjectUrl;
+
+  const sampleRate = 22050;
+  const noteSec = 0.34;
+  const noteSamples = Math.floor(sampleRate * noteSec);
+  const totalSamples = CAROLS_NOTES.length * noteSamples;
+  const buffer = new ArrayBuffer(44 + totalSamples * 2);
+  const view = new DataView(buffer);
+
+  const writeString = (offset, str) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + totalSamples * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true); // PCM chunk size
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, 1, true); // Mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, totalSamples * 2, true);
+
+  let sampleIdx = 0;
+  for (const freq of CAROLS_NOTES) {
+    for (let i = 0; i < noteSamples; i++) {
+      let val = 0;
+      if (freq > 0) {
+        const t = i / sampleRate;
+        const attack = Math.min(1, t / 0.015);
+        const tail = Math.min(1, (noteSamples - i) / (sampleRate * 0.025));
+        const env = attack * tail * Math.exp(-t * 4.8);
+        const wave =
+          0.65 * Math.sin(2 * Math.PI * freq * t) +
+          0.25 * Math.sin(2 * Math.PI * freq * 2 * t) +
+          0.1 * Math.sin(2 * Math.PI * freq * 3 * t);
+        val = Math.max(-1, Math.min(1, wave * env * 0.45));
+      }
+      view.setInt16(44 + sampleIdx * 2, Math.round(val * 32767), true);
+      sampleIdx += 1;
+    }
+  }
+
+  const blob = new Blob([buffer], { type: "audio/wav" });
+  musicObjectUrl = URL.createObjectURL(blob);
+  return musicObjectUrl;
 }
 
-function setMusicPlaying(enabled) {
+function getMusicAudio() {
+  if (!musicAudio) {
+    musicAudio = new Audio(createChristmasCarolWavUrl());
+    musicAudio.loop = true;
+    musicAudio.volume = 0.65;
+    musicAudio.addEventListener("error", () => {
+      syncMusicButtonUI(false);
+      showToast("🔇 No se pudo reproducir la melodía en este dispositivo.");
+    });
+  }
+  return musicAudio;
+}
+
+function syncMusicButtonUI(enabled) {
   stateApi.setSoundEnabled(enabled);
   soundToggleBtn.setAttribute("aria-pressed", String(enabled));
   soundToggleBtn.classList.toggle("is-active", enabled);
   soundToggleBtn.textContent = enabled ? "🔊 Música ON" : "🔇 Música";
+}
 
-  if (musicInterval) {
-    clearInterval(musicInterval);
-    musicInterval = null;
-  }
-
+function setMusicPlaying(enabled) {
   if (enabled) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-    if (!audioCtx) audioCtx = new AudioContextClass();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    musicInterval = setInterval(() => {
-      playSoftNote(CAROLS_NOTES[noteIndex % CAROLS_NOTES.length]);
-      noteIndex += 1;
-    }, 380);
+    try {
+      const audio = getMusicAudio();
+      syncMusicButtonUI(true);
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch((err) => {
+          if (err?.name === "AbortError" || !stateApi.getState().soundEnabled) return;
+          syncMusicButtonUI(false);
+          showToast("🔊 Toca de nuevo Música para activar el sonido en tu móvil.");
+        });
+      }
+    } catch {
+      syncMusicButtonUI(false);
+      showToast("🔊 Toca de nuevo Música para activar el sonido en tu móvil.");
+    }
+  } else {
+    syncMusicButtonUI(false);
+    if (musicAudio) {
+      musicAudio.pause();
+      musicAudio.currentTime = 0;
+    }
   }
 }
 
@@ -293,7 +369,10 @@ function showToast(text) {
 const TYPE_ICONS = {
   polaroid: "📸",
   voucher: "🎟️",
-  quiz: "❓",
+  memory: "🃏",
+  catcher: "🍲",
+  simon: "🔔",
+  whack: "👹",
   wordle: "🟩",
   scratch: "🪙",
   puzzle: "🧩",
@@ -304,7 +383,7 @@ function renderFragmentsTracker() {
   const st = stateApi.getState();
   const fragInfo = getSecretFragmentsState(DAYS_DATA, st.completedDays, st.creatorMode);
 
-  fragmentsCounter.textContent = `${fragInfo.unlockedCount} / ${fragInfo.totalCount} letras`;
+  fragmentsCounter.textContent = `${fragInfo.unlockedCount} / ${fragInfo.totalCount} claves`;
   fragmentsSlots.innerHTML = fragInfo.fragments
     .map(
       (f) => `
@@ -337,6 +416,7 @@ function renderCalendarGrid() {
     if (dayData.day === 24) card.classList.add("is-finale");
     card.classList.add(unlocked ? "is-unlocked" : "is-locked");
     if (opened && unlocked) card.classList.add("is-opened");
+    if (completed && unlocked) card.classList.add("is-completed");
 
     const btn = document.createElement("button");
     btn.type = "button";
@@ -351,9 +431,19 @@ function renderCalendarGrid() {
     const frame = document.createElement("div");
     frame.className = "door-frame";
     frame.innerHTML = `
-      <span class="door-inside-icon">${TYPE_ICONS[dayData.type] || "✨"}</span>
-      <span class="door-inside-title">${dayData.title}</span>
-      <span class="door-inside-status">${completed ? "✓ Completado" : "Abrir sorpresa"}</span>
+      <div class="door-inside-header">
+        <span class="door-inside-day">DÍA ${dayData.day}</span>
+        ${
+          dayData.fragmentLetter
+            ? `<span class="door-inside-frag">🗝️ ${completed || st.creatorMode ? dayData.fragmentLetter : "?"}</span>`
+            : ""
+        }
+      </div>
+      <div class="door-inside-center">
+        <span class="door-inside-icon">${TYPE_ICONS[dayData.type] || "✨"}</span>
+        <span class="door-inside-title">${dayData.title}</span>
+      </div>
+      <span class="door-inside-status">${completed ? "✓ Completado" : "Toca para jugar"}</span>
     `;
 
     const leaf = document.createElement("div");
@@ -391,7 +481,7 @@ function handleDoorClick(dayData) {
 
   if (!unlocked) {
     const countdown = getUnlockCountdownText(dayData.day, now, CONFIG.targetYear);
-    showToast(`🔒 ¡Paciencia, Nori! ${countdown}. (O prueba en Modo Creador)`);
+    showToast(`🔒 ¡Paciencia, Nori! ${countdown} ❤️`);
     return;
   }
 
@@ -426,11 +516,16 @@ function openDayModal(dayData) {
 }
 
 /* ==================== PANTALLA DE PIN & MODO CREADOR ==================== */
+const wantsCreatorQuery = new URLSearchParams(window.location.search).get("creador") === "1";
+
 function showMainApp() {
   lockScreen.hidden = true;
   appShell.hidden = false;
   renderCalendarGrid();
   updateSnowState(stateApi.getState().snowEnabled);
+  if (wantsCreatorQuery) {
+    openCreatorModal();
+  }
 }
 
 pinHintText.textContent = CONFIG.pinHint || "Introduce nuestra clave";

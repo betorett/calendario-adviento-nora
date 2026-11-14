@@ -45,7 +45,7 @@ export function validateCreatorCode(input, expectedCode) {
 }
 
 /**
- * Comprueba si el código secreto del Día 24 (NORITA) es válido.
+ * Comprueba si el código secreto del Día 24 (M7C2V0) es válido.
  * @param {string} input
  * @param {string} expectedWord
  * @returns {boolean}
@@ -121,7 +121,7 @@ export function buildWhatsAppUrl(phone, message) {
 }
 
 /**
- * Devuelve el estado de los fragmentos del código secreto (p. ej. N-O-R-I-T-A)
+ * Devuelve el estado de los fragmentos del código secreto (p. ej. M-7-C-2-V-0)
  * según los días completados.
  *
  * @param {Array<object>} daysData
