@@ -1,0 +1,16 @@
+CARPETA DE FOTOS PARA EL CALENDARIO DE ADVIENTO DE NORI
+=========================================================
+
+Si pones tus fotos reales aquí con estos nombres exactos, aparecerán automáticamente en lugar de las ilustraciones navideñas:
+
+- dia-1.jpg   -> Polaroid del Día 1 (Bienvenida)
+- dia-6.jpg   -> Polaroid del Día 6 (Puente de Milán)
+- dia-9.jpg   -> Puzzle 3x3 del Día 9
+- dia-13.jpg  -> Polaroid del Día 13 (Cuevas de Cañart)
+- dia-17.jpg  -> Polaroid del Día 17
+- dia-19.jpg  -> Puzzle 3x3 del Día 19
+- dia-22.jpg  -> Polaroid del Día 22
+
+(Opcional) Si quieres poner audios o notas de voz en alguna Polaroid:
+Crea la carpeta `assets/audio/` y guarda archivos llamados `dia-1.mp3`, `dia-6.mp3`, `dia-13.mp3`, `dia-17.mp3` o `dia-22.mp3`.
+Si no existen, el calendario simplemente oculta el reproductor sin dar ningún error.

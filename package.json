@@ -1,0 +1,10 @@
+{
+  "name": "calendario-adviento-nora",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Calendario de Adviento interactivo personalizado para Nora (Nori) de parte de Vicent",
+  "scripts": {
+    "test": "node --test tests/calendar.test.js"
+  }
+}
