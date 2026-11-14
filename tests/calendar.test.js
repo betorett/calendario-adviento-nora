@@ -148,4 +148,29 @@ test("getUnlockCountdownText y recuperación segura ante JSON corrupto", () => {
   };
   const safeManager = createStateManager(corruptStorage, "corrupt");
   assert.equal(safeManager.getState().unlockedIntro, false);
+  assert.equal(safeManager.getState().soundEnabled, true);
+  assert.equal(safeManager.getState().snowEnabled, true);
+});
+
+test("La música y la nieve están activadas por defecto y no pueden desactivarse", () => {
+  const store = new Map([
+    ["legacy_key", JSON.stringify({ unlockedIntro: true, soundEnabled: false, snowEnabled: false })]
+  ]);
+  const mockStorage = {
+    getItem: (k) => store.get(k) ?? null,
+    setItem: (k, v) => store.set(k, v)
+  };
+
+  const manager = createStateManager(mockStorage, "legacy_key");
+  assert.equal(manager.getState().soundEnabled, true);
+  assert.equal(manager.getState().snowEnabled, true);
+
+  manager.setSoundEnabled(false);
+  manager.setSnowEnabled(false);
+  assert.equal(manager.getState().soundEnabled, true);
+  assert.equal(manager.getState().snowEnabled, true);
+
+  manager.resetAll();
+  assert.equal(manager.getState().soundEnabled, true);
+  assert.equal(manager.getState().snowEnabled, true);
 });

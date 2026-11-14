@@ -25,9 +25,6 @@ const creatorIndicator = document.getElementById("creator-indicator");
 const footerYear = document.getElementById("footer-year");
 const toastBanner = document.getElementById("toast-banner");
 
-const soundToggleBtn = document.getElementById("sound-toggle-btn");
-const snowToggleBtn = document.getElementById("snow-toggle-btn");
-
 const dayDialog = document.getElementById("day-dialog");
 const dialogDayBadge = document.getElementById("dialog-day-badge");
 const dialogDayTitle = document.getElementById("dialog-day-title");
@@ -46,6 +43,51 @@ const creatorFeedback = document.getElementById("creator-feedback");
 
 let activeGameCleanup = null;
 let toastTimer = null;
+
+/* ==================== ICONOGRAFÍA VECTORIAL EDITORIAL ==================== */
+const DOOR_TYPE_SVGS = {
+  polaroid: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="11.5" r="3.2"/><path d="M16.5 7.5h.01"/></svg>`,
+  voucher: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/><line x1="9" y1="7" x2="9" y2="17" stroke-dasharray="2 2"/></svg>`,
+  memory: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="11" height="14" rx="2"/><path d="M9 3h9a2 2 0 0 1 2 2v12"/></svg>`,
+  catcher: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16a8 8 0 0 1-16 0z"/><path d="M8 7c0-1.5 1-2 1-3M12 7c0-1.5 1-2 1-3M16 7c0-1.5 1-2 1-3"/></svg>`,
+  simon: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+  whack: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.3 6.7L21 11l-6.7 2.3L12 20l-2.3-6.7L3 11l6.7-2.3L12 2z"/></svg>`,
+  wordle: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>`,
+  scratch: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/></svg>`,
+  puzzle: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h4a2 2 0 1 1 4 0h4a1 1 0 0 1 1 1v4a2 2 0 1 1 0 4v4a1 1 0 0 1-1 1h-4a2 2 0 1 0-4 0H4a1 1 0 0 1-1-1v-4a2 2 0 1 0 0-4V8a1 1 0 0 1 1-1z"/></svg>`,
+  finale: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M7.5 8a2.5 2.5 0 1 1 4.5-1.5V8M16.5 8a2.5 2.5 0 1 0-4.5-1.5V8"/></svg>`
+};
+
+const UI_LOCK_SVG = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+const UI_KEY_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4"/><path d="m20 3-9 9"/><path d="m15 8 2.5 2.5"/></svg>`;
+const UI_CHECK_SVG = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+const DOOR_GRID_LABELS = {
+  1: "Carta y Polaroid",
+  2: "Memory de invierno",
+  3: "Noche de sofá y peli",
+  4: "Wordle I · Clave",
+  5: "Rasca viajero",
+  6: "Recuerdo Polaroid",
+  7: "Desayuno de reina",
+  8: "La sopa de Nori",
+  9: "Puzzle I · Nosotros",
+  10: "Pinche oficial",
+  11: "Wordle II",
+  12: "Rasca · Mimo y clave",
+  13: "Postal del pueblo",
+  14: "Luces y campanas",
+  15: "Excursión natural",
+  16: "Wordle III · Clave",
+  17: "Tu mejor sonrisa",
+  18: "Capricho dulce",
+  19: "Puzzle II · Momento",
+  20: "Burrito o burguer",
+  21: "Fuera el Grinch",
+  22: "Lo mejor del año",
+  23: "Último rasca",
+  24: "El Cofre Secreto"
+};
 
 /* ==================== MODERN WEB GUIDANCE: TOP-LAYER EXIT & LIGHT-DISMISS FALLBACK ==================== */
 let supportsDisplayTransition;
@@ -86,13 +128,11 @@ async function closeTopLayer(element) {
 }
 
 function setupDialogSupport(dialogEl) {
-  // Intercepta Esc / light-dismiss nativo para animar la salida cuando falte overlay/display transition
   dialogEl.addEventListener("cancel", (event) => {
     event.preventDefault();
     closeTopLayer(dialogEl);
   });
 
-  // Fallback para navegadores sin closedby (ej. Safari): detectar clic fuera de los límites del diálogo
   if (!("closedBy" in HTMLDialogElement.prototype)) {
     const outside = (e) => {
       const r = dialogEl.getBoundingClientRect();
@@ -147,6 +187,8 @@ dayDialog.addEventListener("close", () => {
     activeGameCleanup = null;
   }
   dialogBody.innerHTML = "";
+  voiceMessagePlaying = false;
+  ensureMusicPlaying();
 });
 
 creatorDialog.addEventListener("close", () => {
@@ -155,29 +197,208 @@ creatorDialog.addEventListener("close", () => {
   creatorFeedback.textContent = "";
 });
 
-/* ==================== MELODÍA NAVIDEÑA EN CAJA DE MÚSICA (WAV PCM + <audio>) ==================== */
-const CAROLS_NOTES = [
-  329.63, 329.63, 329.63, 0,
-  329.63, 329.63, 329.63, 0,
-  329.63, 392.0, 261.63, 293.66, 329.63, 0,
-  349.23, 349.23, 349.23, 349.23,
-  349.23, 329.63, 329.63, 329.63,
-  392.0, 392.0, 349.23, 293.66, 261.63, 0
-];
-
+/* ==================== CELESTA Y ARPA NAVIDEÑA POLIFÓNICA ("NOCHE DE PAZ" EN RE MAYOR) ==================== */
 let musicAudio = null;
 let musicObjectUrl = null;
+let musicPlayPromise = null;
+let musicUnlocked = false;
+let voiceMessagePlaying = false;
+let soundPersisted = false;
 
+/**
+ * Convierte un cifrado en frecuencia exacta en Hz (p. ej. "F#4", "C#5").
+ */
+function noteToFreq(note) {
+  const map = {
+    D3: 146.83,
+    E3: 164.81,
+    "F#3": 185.0,
+    G3: 196.0,
+    A3: 220.0,
+    B3: 246.94,
+    "C#4": 277.18,
+    D4: 293.66,
+    E4: 329.63,
+    "F#4": 369.99,
+    G4: 392.0,
+    A4: 440.0,
+    B4: 493.88,
+    "C#5": 554.37,
+    D5: 587.33,
+    E5: 659.25,
+    "F#5": 739.99,
+    G5: 783.99
+  };
+  return map[note] || 0;
+}
+
+/**
+ * Sintetiza un arreglo polifónico en compás 3/4 de "Noche de Paz" con sonido cálido de celesta,
+ * arpa de acompañamiento, reverberación envolvente y cola cíclica continua sin cortes al reiniciar.
+ */
 function createChristmasCarolWavUrl() {
   if (musicObjectUrl) return musicObjectUrl;
 
   const sampleRate = 22050;
-  const noteSec = 0.34;
-  const noteSamples = Math.floor(sampleRate * noteSec);
-  const totalSamples = CAROLS_NOTES.length * noteSamples;
+  const beatSec = 0.56; // 3/4 vals tranquilo (~107 pulsos de negra por minuto)
+  const totalBeats = 72; // 24 compases completos de 3 tiempos (~40.3s)
+  const totalSamples = Math.round(totalBeats * beatSec * sampleRate);
+
+  const mix = new Float32Array(totalSamples);
+
+  // [tiempoInicialEnBeats, nota, volumen, duracionDecaimientoSec, tipoTimbre]
+  const events = [];
+  const melody = [
+    // Compás 1-2: "Noche de paz"
+    [0, "A4", 0.34, 1.4],
+    [1.5, "B4", 0.25, 0.9],
+    [2, "A4", 0.29, 1.1],
+    [3, "F#4", 0.32, 1.9],
+    // Compás 3-4: "Noche de amor"
+    [6, "A4", 0.34, 1.4],
+    [7.5, "B4", 0.25, 0.9],
+    [8, "A4", 0.29, 1.1],
+    [9, "F#4", 0.32, 1.9],
+    // Compás 5-8: "Todo duerme en derredor"
+    [12, "E5", 0.34, 1.5],
+    [14, "E5", 0.27, 1.0],
+    [15, "C#5", 0.33, 1.9],
+    [18, "D5", 0.34, 1.5],
+    [20, "D5", 0.27, 1.0],
+    [21, "A4", 0.32, 1.9],
+    // Compás 9-12: "Entre los astros que esparcen su luz"
+    [24, "B4", 0.32, 1.4],
+    [26, "B4", 0.26, 1.0],
+    [27, "D5", 0.34, 1.3],
+    [28.5, "C#5", 0.26, 0.9],
+    [29, "B4", 0.28, 1.1],
+    [30, "A4", 0.33, 1.3],
+    [31.5, "B4", 0.25, 0.9],
+    [32, "A4", 0.28, 1.1],
+    [33, "F#4", 0.31, 1.9],
+    // Compás 13-16: "Bella anunciando al niñito Jesús"
+    [36, "B4", 0.32, 1.4],
+    [38, "B4", 0.26, 1.0],
+    [39, "D5", 0.34, 1.3],
+    [40.5, "C#5", 0.26, 0.9],
+    [41, "B4", 0.28, 1.1],
+    [42, "A4", 0.33, 1.3],
+    [43.5, "B4", 0.25, 0.9],
+    [44, "A4", 0.28, 1.1],
+    [45, "F#4", 0.31, 1.9],
+    // Compás 17-23: "Brilla la estrella de paz"
+    [48, "E5", 0.34, 1.4],
+    [50, "E5", 0.27, 1.0],
+    [51, "G5", 0.35, 1.3],
+    [52.5, "E5", 0.26, 0.9],
+    [53, "C#5", 0.29, 1.1],
+    [54, "D5", 0.35, 1.9],
+    [57, "F#5", 0.35, 1.9],
+    [60, "D5", 0.31, 1.3],
+    [61.5, "A4", 0.25, 0.9],
+    [62, "F#4", 0.28, 1.1],
+    [63, "A4", 0.31, 1.3],
+    [64.5, "G4", 0.25, 0.9],
+    [65, "E4", 0.27, 1.1],
+    [66, "D4", 0.34, 2.5]
+  ];
+
+  for (const [b, note, amp, decay] of melody) {
+    events.push([b, note, amp, decay, "celesta"]);
+  }
+
+  // Acordes suaves de arpa en arpegio 3/4 por compás (24 compases)
+  const barChords = [
+    ["D3", "A3", "D4", "F#4"], // 1: D
+    ["D3", "A3", "D4", "F#4"], // 2: D
+    ["D3", "A3", "D4", "F#4"], // 3: D
+    ["D3", "A3", "D4", "F#4"], // 4: D
+    ["A3", "C#4", "E4", "G4"], // 5: A7
+    ["A3", "C#4", "E4", "G4"], // 6: A7
+    ["D3", "A3", "D4", "F#4"], // 7: D
+    ["D3", "A3", "D4", "F#4"], // 8: D
+    ["G3", "D4", "G4", "B4"], // 9: G
+    ["G3", "D4", "G4", "B4"], // 10: G
+    ["D3", "A3", "D4", "F#4"], // 11: D
+    ["D3", "A3", "D4", "F#4"], // 12: D
+    ["G3", "D4", "G4", "B4"], // 13: G
+    ["G3", "D4", "G4", "B4"], // 14: G
+    ["D3", "A3", "D4", "F#4"], // 15: D
+    ["D3", "A3", "D4", "F#4"], // 16: D
+    ["A3", "E4", "G4", "A4"], // 17: A7
+    ["A3", "E4", "G4", "C#5"], // 18: A7
+    ["D3", "A3", "D4", "F#4"], // 19: D
+    ["D3", "A3", "D4", "F#4"], // 20: Bmin/D
+    ["D3", "A3", "D4", "F#4"], // 21: D
+    ["A3", "E4", "G4", "E4"], // 22: A7
+    ["D3", "A3", "D4", "F#4"], // 23: D
+    ["D3", "A3", "F#4", "A4"] // 24: cadencia en puente suave al inicio
+  ];
+
+  barChords.forEach((chord, barIdx) => {
+    const startBeat = barIdx * 3;
+    const arpOffsets = [0, 0.5, 1.0, 1.5, 2.0, 2.5];
+    const pattern = [chord[0], chord[1], chord[2], chord[3], chord[2], chord[1]];
+    arpOffsets.forEach((off, step) => {
+      const vol = step === 0 ? 0.14 : 0.085;
+      events.push([startBeat + off, pattern[step], vol, step === 0 ? 1.85 : 1.15, "harp"]);
+    });
+  });
+
+  // Sintetizamos cada evento con decaimiento exponencial envolvente y envoltura circular (loop sin clic)
+  for (const [beatStart, note, amp, decaySec, timbre] of events) {
+    const freq = noteToFreq(note);
+    if (!freq) continue;
+    const startSample = Math.round(beatStart * beatSec * sampleRate);
+    const lenSamples = Math.min(totalSamples, Math.round((decaySec * 3.4) * sampleRate));
+    const twoPiF = (2 * Math.PI * freq) / sampleRate;
+    const tau = decaySec * sampleRate;
+
+    if (timbre === "celesta") {
+      // Ligero desafinado sutil para efecto celesta/coro navideño
+      const detuneRatio = (2 * Math.PI * (freq * 1.0022)) / sampleRate;
+      const attackLen = Math.round(0.014 * sampleRate);
+      for (let i = 0; i < lenSamples; i++) {
+        const atk = i < attackLen ? i / attackLen : 1;
+        const env = atk * Math.exp((-i * 2.2) / tau);
+        const f1 = Math.sin(twoPiF * i);
+        const fChorus = Math.sin(detuneRatio * i);
+        const f2 = Math.sin(twoPiF * 2 * i) * Math.exp(-i / (sampleRate * 0.24));
+        const f3 = Math.sin(twoPiF * 3 * i) * Math.exp(-i / (sampleRate * 0.08));
+        const sample = (0.52 * f1 + 0.26 * fChorus + 0.16 * f2 + 0.06 * f3) * env * amp;
+        mix[(startSample + i) % totalSamples] += sample;
+      }
+    } else {
+      const attackLen = Math.round(0.02 * sampleRate);
+      for (let i = 0; i < lenSamples; i++) {
+        const atk = i < attackLen ? i / attackLen : 1;
+        const env = atk * Math.exp((-i * 2.5) / tau);
+        const f1 = Math.sin(twoPiF * i);
+        const f2 = Math.sin(twoPiF * 2 * i) * Math.exp(-i / (sampleRate * 0.35));
+        const sample = (0.82 * f1 + 0.18 * f2) * env * amp;
+        mix[(startSample + i) % totalSamples] += sample;
+      }
+    }
+  }
+
+  // Cámara de reverberación cálida de 4 ecos circulares + filtro paso bajo suave
+  const wet = new Float32Array(totalSamples);
+  const taps = [
+    [Math.round(0.037 * sampleRate), 0.24],
+    [Math.round(0.061 * sampleRate), 0.17],
+    [Math.round(0.097 * sampleRate), 0.12],
+    [Math.round(0.149 * sampleRate), 0.08]
+  ];
+  for (let i = 0; i < totalSamples; i++) {
+    let rev = mix[i];
+    for (const [delay, gain] of taps) {
+      rev += mix[(i - delay + totalSamples) % totalSamples] * gain;
+    }
+    wet[i] = rev;
+  }
+
   const buffer = new ArrayBuffer(44 + totalSamples * 2);
   const view = new DataView(buffer);
-
   const writeString = (offset, str) => {
     for (let i = 0; i < str.length; i++) {
       view.setUint8(offset + i, str.charCodeAt(i));
@@ -188,9 +409,9 @@ function createChristmasCarolWavUrl() {
   view.setUint32(4, 36 + totalSamples * 2, true);
   writeString(8, "WAVE");
   writeString(12, "fmt ");
-  view.setUint32(16, 16, true); // PCM chunk size
-  view.setUint16(20, 1, true); // PCM format
-  view.setUint16(22, 1, true); // Mono
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, sampleRate * 2, true);
   view.setUint16(32, 2, true);
@@ -198,24 +419,13 @@ function createChristmasCarolWavUrl() {
   writeString(36, "data");
   view.setUint32(40, totalSamples * 2, true);
 
-  let sampleIdx = 0;
-  for (const freq of CAROLS_NOTES) {
-    for (let i = 0; i < noteSamples; i++) {
-      let val = 0;
-      if (freq > 0) {
-        const t = i / sampleRate;
-        const attack = Math.min(1, t / 0.015);
-        const tail = Math.min(1, (noteSamples - i) / (sampleRate * 0.025));
-        const env = attack * tail * Math.exp(-t * 4.8);
-        const wave =
-          0.65 * Math.sin(2 * Math.PI * freq * t) +
-          0.25 * Math.sin(2 * Math.PI * freq * 2 * t) +
-          0.1 * Math.sin(2 * Math.PI * freq * 3 * t);
-        val = Math.max(-1, Math.min(1, wave * env * 0.45));
-      }
-      view.setInt16(44 + sampleIdx * 2, Math.round(val * 32767), true);
-      sampleIdx += 1;
-    }
+  let prev = wet[totalSamples - 1];
+  for (let i = 0; i < totalSamples; i++) {
+    // Suavizado tipo fieltro cálido + limitador suave con tanh para evitar saturación
+    const filtered = 0.72 * wet[i] + 0.28 * prev;
+    prev = filtered;
+    const limited = Math.tanh(filtered * 0.9);
+    view.setInt16(44 + i * 2, Math.round(limited * 32767), true);
   }
 
   const blob = new Blob([buffer], { type: "audio/wav" });
@@ -223,136 +433,204 @@ function createChristmasCarolWavUrl() {
   return musicObjectUrl;
 }
 
+let unlockListenersAttached = false;
+
 function getMusicAudio() {
   if (!musicAudio) {
     musicAudio = new Audio(createChristmasCarolWavUrl());
     musicAudio.loop = true;
-    musicAudio.volume = 0.65;
-    musicAudio.addEventListener("error", () => {
-      syncMusicButtonUI(false);
-      showToast("🔇 No se pudo reproducir la melodía en este dispositivo.");
-    });
+    musicAudio.preload = "auto";
+    musicAudio.volume = 0.58;
   }
   return musicAudio;
 }
 
-function syncMusicButtonUI(enabled) {
-  stateApi.setSoundEnabled(enabled);
-  soundToggleBtn.setAttribute("aria-pressed", String(enabled));
-  soundToggleBtn.classList.toggle("is-active", enabled);
-  soundToggleBtn.textContent = enabled ? "🔊 Música ON" : "🔇 Música";
+const UNLOCK_EVENTS = ["touchend", "click", "keydown"];
+function onUserGestureUnlock() {
+  ensureMusicPlaying();
 }
 
-function setMusicPlaying(enabled) {
-  if (enabled) {
-    try {
-      const audio = getMusicAudio();
-      syncMusicButtonUI(true);
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch((err) => {
-          if (err?.name === "AbortError" || !stateApi.getState().soundEnabled) return;
-          syncMusicButtonUI(false);
-          showToast("🔊 Toca de nuevo Música para activar el sonido en tu móvil.");
+function attachMusicUnlockListeners() {
+  if (unlockListenersAttached) return;
+  unlockListenersAttached = true;
+  UNLOCK_EVENTS.forEach((evt) => {
+    document.addEventListener(evt, onUserGestureUnlock, { capture: true, passive: true });
+  });
+}
+
+function detachMusicUnlockListeners() {
+  if (!unlockListenersAttached) return;
+  unlockListenersAttached = false;
+  UNLOCK_EVENTS.forEach((evt) => {
+    document.removeEventListener(evt, onUserGestureUnlock, { capture: true });
+  });
+}
+
+function ensureMusicPlaying() {
+  if (!soundPersisted) {
+    soundPersisted = true;
+    stateApi.setSoundEnabled(true);
+  }
+  if (voiceMessagePlaying) return;
+
+  try {
+    const audio = getMusicAudio();
+    if (!audio.paused && musicUnlocked) return;
+    if (musicPlayPromise) return;
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      musicPlayPromise = playPromise;
+      playPromise
+        .then(() => {
+          musicPlayPromise = null;
+          musicUnlocked = true;
+          detachMusicUnlockListeners();
+        })
+        .catch(() => {
+          musicPlayPromise = null;
+          attachMusicUnlockListeners();
         });
-      }
-    } catch {
-      syncMusicButtonUI(false);
-      showToast("🔊 Toca de nuevo Música para activar el sonido en tu móvil.");
+    } else if (!audio.paused) {
+      musicUnlocked = true;
+      detachMusicUnlockListeners();
     }
-  } else {
-    syncMusicButtonUI(false);
-    if (musicAudio) {
-      musicAudio.pause();
-      musicAudio.currentTime = 0;
-    }
+  } catch {
+    attachMusicUnlockListeners();
   }
 }
 
-soundToggleBtn.addEventListener("click", () => {
-  const next = !stateApi.getState().soundEnabled;
-  setMusicPlaying(next);
+attachMusicUnlockListeners();
+
+// Pausa la música ambiental mientras suena un audio de Polaroid y la reanuda al terminar
+dayDialog.addEventListener(
+  "play",
+  (e) => {
+    if (e.target && e.target.tagName === "AUDIO") {
+      voiceMessagePlaying = true;
+      if (musicAudio && !musicAudio.paused) {
+        musicAudio.pause();
+      }
+    }
+  },
+  true
+);
+
+["pause", "ended"].forEach((evt) => {
+  dayDialog.addEventListener(
+    evt,
+    (e) => {
+      if (e.target && e.target.tagName === "AUDIO" && voiceMessagePlaying) {
+        voiceMessagePlaying = false;
+        ensureMusicPlaying();
+      }
+    },
+    true
+  );
 });
 
-/* ==================== NIEVE ANIMADA EN <canvas> ==================== */
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && !voiceMessagePlaying && (!musicAudio || musicAudio.paused)) {
+    ensureMusicPlaying();
+  }
+});
+
+function scheduleIdleAudioWarmup() {
+  const run = () => {
+    getMusicAudio();
+    ensureMusicPlaying();
+  };
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 400 });
+  } else {
+    setTimeout(run, 150);
+  }
+}
+
+/* ==================== NIEVE PERMANENTE MULTICAPA EN <canvas> ==================== */
 const snowCanvas = document.getElementById("snow-canvas");
 const snowCtx = snowCanvas.getContext("2d");
 let snowflakes = [];
 let snowRafId = null;
 
 function resizeSnowCanvas() {
-  snowCanvas.width = window.innerWidth;
-  snowCanvas.height = window.innerHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  snowCanvas.width = Math.floor(window.innerWidth * dpr);
+  snowCanvas.height = Math.floor(window.innerHeight * dpr);
+  snowCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 function createFlakes() {
-  const count = Math.min(85, Math.floor((window.innerWidth * window.innerHeight) / 14000));
-  snowflakes = Array.from({ length: Math.max(28, count) }, () => ({
-    x: Math.random() * snowCanvas.width,
-    y: Math.random() * snowCanvas.height,
-    r: 1.2 + Math.random() * 2.8,
-    speedY: 0.35 + Math.random() * 0.9,
-    drift: (Math.random() - 0.5) * 0.45,
-    alpha: 0.3 + Math.random() * 0.55
-  }));
+  const area = window.innerWidth * window.innerHeight;
+  const count = Math.max(36, Math.min(95, Math.floor(area / 13000)));
+  snowflakes = Array.from({ length: count }, (_, idx) => {
+    const depth = idx % 3 === 0 ? 1.35 : idx % 2 === 0 ? 0.9 : 0.55;
+    return {
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: (1.1 + Math.random() * 1.9) * depth,
+      speedY: (0.28 + Math.random() * 0.55) * depth,
+      amp: (0.25 + Math.random() * 0.45) * depth,
+      phase: Math.random() * Math.PI * 2,
+      alpha: 0.16 + 0.34 * depth
+    };
+  });
 }
 
-function drawSnowFrame() {
-  snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+function drawSnowFrame(ts = 0) {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  snowCtx.clearRect(0, 0, w, h);
+
+  const time = ts * 0.001;
   for (const f of snowflakes) {
     f.y += f.speedY;
-    f.x += f.drift;
-    if (f.y > snowCanvas.height + 6) {
-      f.y = -6;
-      f.x = Math.random() * snowCanvas.width;
+    f.x += Math.sin(time * 0.75 + f.phase) * f.amp;
+
+    if (f.y > h + 8) {
+      f.y = -8;
+      f.x = Math.random() * w;
     }
-    if (f.x > snowCanvas.width + 6) f.x = -6;
-    if (f.x < -6) f.x = snowCanvas.width + 6;
+    if (f.x > w + 8) f.x = -8;
+    if (f.x < -8) f.x = w + 8;
 
     snowCtx.beginPath();
     snowCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-    snowCtx.fillStyle = `rgba(255, 248, 236, ${f.alpha})`;
+    snowCtx.fillStyle = `rgba(250, 243, 232, ${f.alpha})`;
     snowCtx.fill();
   }
   snowRafId = requestAnimationFrame(drawSnowFrame);
 }
 
-function updateSnowState(enabled) {
-  stateApi.setSnowEnabled(enabled);
-  snowToggleBtn.setAttribute("aria-pressed", String(enabled));
-  snowToggleBtn.classList.toggle("is-active", enabled);
-  snowToggleBtn.textContent = enabled ? "❄️ Nieve" : "❄️ Sin nieve";
+function startAlwaysOnSnow() {
+  stateApi.setSnowEnabled(true);
+  if (snowRafId) cancelAnimationFrame(snowRafId);
+  resizeSnowCanvas();
+  createFlakes();
 
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (snowRafId) {
-    cancelAnimationFrame(snowRafId);
-    snowRafId = null;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // Dibuja copos suaves estáticos respetando preferencia de movimiento reducido
+    snowCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    for (const f of snowflakes) {
+      snowCtx.beginPath();
+      snowCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      snowCtx.fillStyle = `rgba(250, 243, 232, ${f.alpha})`;
+      snowCtx.fill();
+    }
+    return;
   }
 
-  if (enabled && !reduced) {
-    resizeSnowCanvas();
-    createFlakes();
-    drawSnowFrame();
-  } else {
-    snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
-  }
+  snowRafId = requestAnimationFrame(drawSnowFrame);
 }
 
 let lastSnowWidth = window.innerWidth;
-
 window.addEventListener("resize", () => {
-  if (!stateApi.getState().snowEnabled) return;
   const currentWidth = window.innerWidth;
   resizeSnowCanvas();
-  // En móviles al ocultar/mostrar la barra de direcciones solo cambia el alto: evitamos reiniciar la nieve
   if (Math.abs(currentWidth - lastSnowWidth) > 40) {
     lastSnowWidth = currentWidth;
     createFlakes();
   }
-});
-
-snowToggleBtn.addEventListener("click", () => {
-  updateSnowState(!stateApi.getState().snowEnabled);
 });
 
 /* ==================== TOAST INFORMATIVO ==================== */
@@ -365,19 +643,10 @@ function showToast(text) {
   }, 3600);
 }
 
-/* ==================== RENDERIZADO DE FRAGMENTOS Y PUERTAS ==================== */
-const TYPE_ICONS = {
-  polaroid: "📸",
-  voucher: "🎟️",
-  memory: "🃏",
-  catcher: "🍲",
-  simon: "🔔",
-  whack: "👹",
-  wordle: "🟩",
-  scratch: "🪙",
-  puzzle: "🧩",
-  finale: "🎁"
-};
+/* ==================== RENDERIZADO DE CÓDICE Y 24 PUERTAS ==================== */
+function formatDayNum(day) {
+  return String(day).padStart(2, "0");
+}
 
 function renderFragmentsTracker() {
   const st = stateApi.getState();
@@ -388,8 +657,8 @@ function renderFragmentsTracker() {
     .map(
       (f) => `
       <div class="fragment-chip ${f.unlocked ? "is-found" : ""}" title="Día ${f.day}">
-        <span class="fragment-chip-letter">${f.unlocked ? f.letter : "?"}</span>
-        <span class="fragment-chip-day">Día ${f.day}</span>
+        <span class="fragment-chip-letter">${f.unlocked ? f.letter : "·"}</span>
+        <span class="fragment-chip-day">Día ${formatDayNum(f.day)}</span>
       </div>
     `
     )
@@ -410,6 +679,9 @@ function renderCalendarGrid() {
     const unlocked = isDayUnlocked(dayData.day, now, st.creatorMode, CONFIG.targetYear);
     const opened = st.openedDays.includes(dayData.day);
     const completed = st.completedDays.includes(dayData.day);
+    const typeSvg = DOOR_TYPE_SVGS[dayData.type] || DOOR_TYPE_SVGS.polaroid;
+    const dayPad = formatDayNum(dayData.day);
+    const shortLabel = DOOR_GRID_LABELS[dayData.day] || dayData.subtitle || dayData.title;
 
     const card = document.createElement("article");
     card.className = "door-card";
@@ -432,34 +704,37 @@ function renderCalendarGrid() {
     frame.className = "door-frame";
     frame.innerHTML = `
       <div class="door-inside-header">
-        <span class="door-inside-day">DÍA ${dayData.day}</span>
+        <span class="door-inside-day">${dayPad}</span>
         ${
           dayData.fragmentLetter
-            ? `<span class="door-inside-frag">🗝️ ${completed || st.creatorMode ? dayData.fragmentLetter : "?"}</span>`
+            ? `<span class="door-inside-frag">${UI_KEY_SVG}<span>${completed || st.creatorMode ? dayData.fragmentLetter : "?"}</span></span>`
             : ""
         }
       </div>
       <div class="door-inside-center">
-        <span class="door-inside-icon">${TYPE_ICONS[dayData.type] || "✨"}</span>
-        <span class="door-inside-title">${dayData.title}</span>
+        <span class="door-inside-emblem">${typeSvg}</span>
+        <span class="door-inside-title">${shortLabel}</span>
       </div>
-      <span class="door-inside-status">${completed ? "✓ Completado" : "Toca para jugar"}</span>
+      <span class="door-inside-status">${
+        completed ? `${UI_CHECK_SVG}<span>Completado</span>` : `<span>Abrir</span>`
+      }</span>
     `;
 
     const leaf = document.createElement("div");
     leaf.className = "door-leaf";
     leaf.innerHTML = `
       <div class="door-top">
-        <span class="door-number">${dayData.day}</span>
+        <span class="door-meta-label">DIC</span>
         <span class="door-badge-icon">${
-          unlocked ? (completed ? "✅" : TYPE_ICONS[dayData.type] || "✨") : "🔒"
+          unlocked ? (completed ? UI_CHECK_SVG : typeSvg) : UI_LOCK_SVG
         }</span>
       </div>
+      <span class="door-number">${dayPad}</span>
       <div class="door-bottom">
-        <span>${unlocked ? "Toca para abrir" : `${dayData.day} de dic`}</span>
+        <span>${unlocked ? "Abrir" : `${dayPad} dic`}</span>
         ${
           dayData.fragmentLetter
-            ? `<span class="door-fragment-tag">🗝️ ${completed || st.creatorMode ? dayData.fragmentLetter : "?"}</span>`
+            ? `<span class="door-fragment-tag">${UI_KEY_SVG}<span>${completed || st.creatorMode ? dayData.fragmentLetter : "?"}</span></span>`
             : ""
         }
       </div>
@@ -481,7 +756,7 @@ function handleDoorClick(dayData) {
 
   if (!unlocked) {
     const countdown = getUnlockCountdownText(dayData.day, now, CONFIG.targetYear);
-    showToast(`🔒 ¡Paciencia, Nori! ${countdown} ❤️`);
+    showToast(`Paciencia, Nori — ${countdown}`);
     return;
   }
 
@@ -496,7 +771,7 @@ function openDayModal(dayData) {
     activeGameCleanup = null;
   }
 
-  dialogDayBadge.textContent = `DÍA ${dayData.day} DE DICIEMBRE`;
+  dialogDayBadge.textContent = `DÍA ${formatDayNum(dayData.day)} DE DICIEMBRE`;
   dialogDayTitle.textContent = dayData.title;
   dialogDaySubtitle.textContent = dayData.subtitle || "";
 
@@ -518,11 +793,15 @@ function openDayModal(dayData) {
 /* ==================== PANTALLA DE PIN & MODO CREADOR ==================== */
 const wantsCreatorQuery = new URLSearchParams(window.location.search).get("creador") === "1";
 
-function showMainApp() {
+function showMainApp(fromUserAction = false) {
   lockScreen.hidden = true;
   appShell.hidden = false;
   renderCalendarGrid();
-  updateSnowState(stateApi.getState().snowEnabled);
+  if (fromUserAction) {
+    ensureMusicPlaying();
+  } else {
+    scheduleIdleAudioWarmup();
+  }
   if (wantsCreatorQuery) {
     openCreatorModal();
   }
@@ -532,12 +811,13 @@ pinHintText.textContent = CONFIG.pinHint || "Introduce nuestra clave";
 
 pinForm.addEventListener("submit", (e) => {
   e.preventDefault();
+  ensureMusicPlaying();
   if (validatePin(pinInput.value, CONFIG.pinCode)) {
     pinError.textContent = "";
     stateApi.unlockIntro();
-    showMainApp();
+    showMainApp(true);
   } else {
-    pinError.textContent = "Ups, esa clave no es... ¡Pista: nuestra fecha especial (4 dígitos)! ❤️";
+    pinError.textContent = "Clave incorrecta · Pista: nuestra fecha especial (4 dígitos)";
     pinInput.select();
   }
 });
@@ -549,11 +829,11 @@ creatorForm.addEventListener("submit", (e) => {
     creatorCodeInput.value = "";
     creatorFeedback.className = "game-feedback is-success";
     creatorFeedback.textContent =
-      "🛠️ ¡Modo Creador activado! Ya puedes abrir cualquier puerta del 1 al 24 para probarla.";
+      "Modo Creador activado. Ya puedes abrir cualquier puerta del 01 al 24.";
     renderCalendarGrid();
   } else {
     creatorFeedback.className = "game-feedback is-hint";
-    creatorFeedback.textContent = "Código incorrecto. Pista: el nombre del autor de este regalo 😉";
+    creatorFeedback.textContent = "Código incorrecto. Pista: el nombre del autor de este regalo.";
   }
 });
 
@@ -561,26 +841,25 @@ creatorDisableBtn.addEventListener("click", () => {
   stateApi.setCreatorMode(false);
   creatorFeedback.className = "game-feedback is-hint";
   creatorFeedback.textContent =
-    "🔒 Modo Creador desactivado. Ahora se respeta el bloqueo real por fechas de diciembre.";
+    "Modo Creador desactivado. Vuelve a aplicarse el bloqueo real por fecha.";
   renderCalendarGrid();
 });
 
 creatorResetBtn.addEventListener("click", () => {
   stateApi.resetAll();
   stateApi.unlockIntro();
-  setMusicPlaying(false);
-  updateSnowState(true);
+  soundPersisted = false;
+  ensureMusicPlaying();
   creatorFeedback.className = "game-feedback is-hint";
-  creatorFeedback.textContent = "🧹 Progreso reiniciado. Todas las puertas han vuelto a cerrarse.";
+  creatorFeedback.textContent = "Progreso reiniciado. Todas las puertas han vuelto a cerrarse.";
   renderCalendarGrid();
 });
 
 /* ==================== INICIO ==================== */
-// La música siempre empieza apagada tras una carga de página para cumplir con autoplay y sincronizar el botón
-setMusicPlaying(false);
+startAlwaysOnSnow();
 
 if (stateApi.getState().unlockedIntro) {
-  showMainApp();
+  showMainApp(false);
 } else {
-  updateSnowState(stateApi.getState().snowEnabled);
+  scheduleIdleAudioWarmup();
 }

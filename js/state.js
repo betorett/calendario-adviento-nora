@@ -17,7 +17,7 @@ export function createEmptyState() {
     completedDays: [],
     redeemedVouchers: [],
     finaleUnlocked: false,
-    soundEnabled: false,
+    soundEnabled: true,
     snowEnabled: true
   };
 }
@@ -172,6 +172,8 @@ export function createStateManager(
       return {
         ...base,
         ...parsed,
+        soundEnabled: true,
+        snowEnabled: true,
         openedDays: Array.isArray(parsed.openedDays) ? [...new Set(parsed.openedDays)] : [],
         completedDays: Array.isArray(parsed.completedDays) ? [...new Set(parsed.completedDays)] : [],
         redeemedVouchers: Array.isArray(parsed.redeemedVouchers)
@@ -240,12 +242,12 @@ export function createStateManager(
       }
       saveState();
     },
-    setSoundEnabled(enabled) {
-      state.soundEnabled = Boolean(enabled);
+    setSoundEnabled() {
+      state.soundEnabled = true;
       saveState();
     },
-    setSnowEnabled(enabled) {
-      state.snowEnabled = Boolean(enabled);
+    setSnowEnabled() {
+      state.snowEnabled = true;
       saveState();
     },
     resetAll() {

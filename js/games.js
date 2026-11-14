@@ -75,10 +75,16 @@ function createFragmentBadge(letter) {
   const badge = document.createElement("div");
   badge.className = "fragment-award-banner";
   badge.innerHTML = `
-    <span class="fragment-award-icon">🗝️</span>
+    <span class="fragment-award-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7.5" cy="15.5" r="4.5" />
+        <path d="m21 2-9.6 9.6" />
+        <path d="m15.5 7.5 3 3L22 7l-3-3" />
+      </svg>
+    </span>
     <div>
-      <strong>¡Clave Secreta Desbloqueada!</strong>
-      <p>Has conseguido el carácter <span class="fragment-pill">${letter}</span> para el cofre del Día 24.</p>
+      <strong>Clave secreta desbloqueada</strong>
+      <p>Has obtenido el carácter <span class="fragment-pill">${letter}</span> para el cofre del Día 24.</p>
     </div>
   `;
   return badge;
@@ -168,20 +174,20 @@ function renderPolaroid(container, dayData, onComplete) {
   caption.textContent = dayData.caption || `Día ${dayData.day}`;
   const hint = document.createElement("span");
   hint.className = "polaroid-flip-hint";
-  hint.textContent = "Toca la foto para darle la vuelta ↻";
+  hint.textContent = "Toca la postal para leer la dedicatoria";
   front.append(imgWrap, caption, hint);
 
   const back = document.createElement("div");
   back.className = "polaroid-face polaroid-back";
   const backTitle = document.createElement("h3");
   backTitle.className = "polaroid-back-title";
-  backTitle.textContent = dayData.rewardTitle || "Para Nori ❤️";
+  backTitle.textContent = dayData.rewardTitle || "Para Nori";
   const msg = document.createElement("p");
   msg.className = "polaroid-back-message";
   msg.textContent = dayData.message;
   const sign = document.createElement("p");
   sign.className = "polaroid-signature";
-  sign.textContent = "Con todo mi cariño, Vicent ❤️";
+  sign.textContent = "Con todo mi cariño, Vicent";
   back.append(backTitle, msg, sign);
 
   if (dayData.audio) {
@@ -197,7 +203,7 @@ function renderPolaroid(container, dayData, onComplete) {
     });
     const audioLabel = document.createElement("span");
     audioLabel.className = "polaroid-audio-label";
-    audioLabel.textContent = "🎧 Mensaje / canción del día:";
+    audioLabel.textContent = "Mensaje de voz del día";
     audioBox.append(audioLabel, audioEl);
     back.appendChild(audioBox);
   }
@@ -210,14 +216,14 @@ function renderPolaroid(container, dayData, onComplete) {
   const flipBtn = document.createElement("button");
   flipBtn.type = "button";
   flipBtn.className = "btn-gold";
-  flipBtn.textContent = "🔄 Girar Polaroid y leer dedicatoria";
+  flipBtn.textContent = "Leer dedicatoria";
 
   let flipped = false;
   const toggleFlip = (e) => {
     if (e && e.target && e.target.closest(".polaroid-audio-box")) return;
     flipped = !flipped;
     card.classList.toggle("is-flipped", flipped);
-    flipBtn.textContent = flipped ? "🖼️ Ver fotografía" : "🔄 Girar Polaroid y leer dedicatoria";
+    flipBtn.textContent = flipped ? "Ver fotografía" : "Leer dedicatoria";
     if (flipped) {
       onComplete(dayData);
     }
@@ -257,7 +263,7 @@ function renderVoucher(container, dayData, config, stateApi, onComplete) {
       <span>Para: <strong>${config.recipientNickname}</strong></span>
       <span>De: <strong>${config.senderName}</strong></span>
     </div>
-    <div class="voucher-stamp" aria-hidden="true">CANJEADO ✨</div>
+    <div class="voucher-stamp" aria-hidden="true">CANJEADO</div>
   `;
 
   const actions = document.createElement("div");
@@ -272,17 +278,17 @@ function renderVoucher(container, dayData, config, stateApi, onComplete) {
   waBtn.href = buildWhatsAppUrl(config.whatsappNumber, waMessage);
   waBtn.target = "_blank";
   waBtn.rel = "noopener noreferrer";
-  waBtn.textContent = `💬 Canjear por WhatsApp con ${config.senderName}`;
+  waBtn.textContent = `Canjear por WhatsApp con ${config.senderName}`;
 
   const markBtn = document.createElement("button");
   markBtn.type = "button";
   markBtn.className = "btn-outline";
-  markBtn.textContent = isRedeemed ? "✅ ¡Vale ya canjeado!" : "🎟️ Marcar como canjeado";
+  markBtn.textContent = isRedeemed ? "Vale ya canjeado" : "Marcar como canjeado";
 
   const markAsRedeemed = () => {
     isRedeemed = true;
     ticket.classList.add("is-redeemed");
-    markBtn.textContent = "✅ ¡Vale ya canjeado!";
+    markBtn.textContent = "Vale ya canjeado";
     stateApi.markVoucherRedeemed(dayData.day);
     onComplete(dayData);
   };
@@ -344,7 +350,7 @@ function renderMemory(container, dayData, onComplete) {
     cardBtn.setAttribute("aria-label", `Carta ${idx + 1}`);
     cardBtn.innerHTML = `
       <span class="memory-card-inner">
-        <span class="memory-face memory-back">✨</span>
+        <span class="memory-face memory-back" aria-hidden="true">✦</span>
         <span class="memory-face memory-front">${symbol}</span>
       </span>
     `;
@@ -957,11 +963,11 @@ function renderWordle(container, dayData, onComplete) {
   hintBtn.type = "button";
   hintBtn.className = "btn-outline btn-sm wordle-hint-btn";
   hintBtn.disabled = true;
-  hintBtn.textContent = "💡 Pedir pista (tras 3 intentos)";
+  hintBtn.textContent = "Pista disponible tras 3 intentos";
   const hintTextEl = document.createElement("p");
   hintTextEl.className = "wordle-hint";
   hintTextEl.hidden = true;
-  hintTextEl.textContent = `💡 ${dayData.hint}`;
+  hintTextEl.textContent = dayData.hint;
   hintBtn.addEventListener("click", () => {
     hintTextEl.hidden = false;
     hintBtn.hidden = true;
@@ -1040,7 +1046,7 @@ function renderWordle(container, dayData, onComplete) {
     statusMsg.innerHTML = "";
     hintBtn.disabled = true;
     hintBtn.hidden = false;
-    hintBtn.textContent = "💡 Pedir pista (tras 3 intentos)";
+    hintBtn.textContent = "Pista disponible tras 3 intentos";
     hintTextEl.hidden = true;
   }
 
@@ -1084,7 +1090,7 @@ function renderWordle(container, dayData, onComplete) {
 
     if (currentRow >= 3 && hintTextEl.hidden) {
       hintBtn.disabled = false;
-      hintBtn.textContent = "💡 Mostrar pista ahora";
+      hintBtn.textContent = "Ver pista";
     }
 
     if (currentRow >= maxAttempts) {
@@ -1192,37 +1198,43 @@ function renderScratchCard(container, dayData, onComplete) {
   const fallbackBtn = document.createElement("button");
   fallbackBtn.type = "button";
   fallbackBtn.className = "btn-outline";
-  fallbackBtn.textContent = "✨ Descubrir directamente";
+  fallbackBtn.textContent = "Descubrir tarjeta";
 
   card.append(underneath, canvas);
   wrap.append(card, feedback, fallbackBtn);
   container.appendChild(wrap);
 
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  // Pintamos la lámina dorada metálica
+  // Lámina champán cepillado
   const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  grad.addColorStop(0, "#d4af37");
-  grad.addColorStop(0.5, "#f7df8d");
-  grad.addColorStop(1, "#b88a1e");
+  grad.addColorStop(0, "#b89347");
+  grad.addColorStop(0.35, "#e7cd94");
+  grad.addColorStop(0.65, "#caa459");
+  grad.addColorStop(1, "#9d7933");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Detalles festivos encima del dorado
-  ctx.fillStyle = "rgba(92, 19, 30, 0.25)";
-  for (let i = 0; i < 36; i++) {
-    const sx = (i * 73) % canvas.width;
-    const sy = (i * 41) % canvas.height;
+  // Líneas sutiles de cepillado satinado y marco doble
+  ctx.strokeStyle = "rgba(255, 250, 238, 0.16)";
+  ctx.lineWidth = 1;
+  for (let y = 0; y < canvas.height; y += 6) {
     ctx.beginPath();
-    ctx.arc(sx, sy, 3, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y - 24);
+    ctx.stroke();
   }
-  ctx.fillStyle = "#4a0e17";
-  ctx.font = "bold 24px Georgia, serif";
+  ctx.strokeStyle = "rgba(54, 12, 20, 0.25)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+
+  ctx.fillStyle = "#2b0a10";
+  ctx.font = "italic 600 26px Georgia, serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("✨ RASCA AQUÍ ✨", canvas.width / 2, canvas.height / 2 - 12);
-  ctx.font = "16px system-ui, sans-serif";
-  ctx.fillText("Desliza el dedo o el ratón", canvas.width / 2, canvas.height / 2 + 20);
+  ctx.fillText("Rasca para descubrir", canvas.width / 2, canvas.height / 2 - 10);
+  ctx.font = "500 13px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(43, 10, 16, 0.72)";
+  ctx.fillText("DESLIZA EL DEDO O EL RATÓN", canvas.width / 2, canvas.height / 2 + 20);
 
   let isDrawing = false;
   let revealed = false;
@@ -1320,7 +1332,7 @@ function renderPuzzle(container, dayData, onComplete) {
   const helpBtn = document.createElement("button");
   helpBtn.type = "button";
   helpBtn.className = "btn-outline btn-sm";
-  helpBtn.textContent = "💡 Completar puzzle";
+  helpBtn.textContent = "Completar puzzle";
   topInfo.append(movesEl, helpBtn);
 
   const board = document.createElement("div");
@@ -1446,11 +1458,11 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
   function showUnlockedVault() {
     wrap.innerHTML = `
       <div class="finale-vault-open">
-        <div class="finale-confetti" aria-hidden="true">✨ 🎁 🎄 ❤️ ✨</div>
+        <div class="finale-confetti" aria-hidden="true">✦</div>
         <h3 class="finale-title">${config.finaleLetterTitle}</h3>
         <p class="finale-body">${config.finaleLetterBody}</p>
         <div class="finale-gift-box">
-          <span class="finale-gift-label">🗝️ TU MISIÓN FINAL:</span>
+          <span class="finale-gift-label">TU MISIÓN FINAL</span>
           <p class="finale-gift-text">${config.physicalGiftInstruction}</p>
         </div>
         <div class="dialog-actions-center">
@@ -1458,7 +1470,7 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
             config.whatsappNumber,
             config.finaleWhatsAppText
           )}" target="_blank" rel="noopener noreferrer">
-            📲 Reclamar mi regalo a ${config.senderName} por WhatsApp
+            Reclamar mi regalo por WhatsApp
           </a>
         </div>
       </div>
@@ -1499,9 +1511,9 @@ function renderFinale24(container, dayData, config, stateApi, daysData, onComple
           value=""
         />
         <div class="vault-buttons">
-          <button type="submit" class="btn-gold">🔓 Abrir Cofre de Nochebuena</button>
+          <button type="submit" class="btn-gold">Abrir Cofre de Nochebuena</button>
           <button type="button" id="vault-autofill-btn" class="btn-outline">
-            ✨ Rellenar con mis claves (${fragInfo.unlockedCount}/${fragInfo.totalCount})
+            Rellenar con mis claves (${fragInfo.unlockedCount}/${fragInfo.totalCount})
           </button>
         </div>
         <p id="vault-feedback" class="game-feedback" aria-live="polite"></p>
