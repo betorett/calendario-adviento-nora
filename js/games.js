@@ -179,6 +179,7 @@ function renderPolaroid(container, dayData, onComplete) {
 
   const back = document.createElement("div");
   back.className = "polaroid-face polaroid-back";
+  back.inert = true;
   const backTitle = document.createElement("h3");
   backTitle.className = "polaroid-back-title";
   backTitle.textContent = dayData.rewardTitle || "Para Nori";
@@ -223,6 +224,8 @@ function renderPolaroid(container, dayData, onComplete) {
     if (e && e.target && e.target.closest(".polaroid-audio-box")) return;
     flipped = !flipped;
     card.classList.toggle("is-flipped", flipped);
+    front.inert = flipped;
+    back.inert = !flipped;
     flipBtn.textContent = flipped ? "Ver fotografía" : "Leer dedicatoria";
     if (flipped) {
       onComplete(dayData);
@@ -347,11 +350,12 @@ function renderMemory(container, dayData, onComplete) {
     const cardBtn = document.createElement("button");
     cardBtn.type = "button";
     cardBtn.className = "memory-card";
+    cardBtn.dataset.cardNumber = String(idx + 1);
     cardBtn.setAttribute("aria-label", `Carta ${idx + 1}`);
     cardBtn.innerHTML = `
       <span class="memory-card-inner">
         <span class="memory-face memory-back" aria-hidden="true">✦</span>
-        <span class="memory-face memory-front">${symbol}</span>
+        <span class="memory-face memory-front" aria-hidden="true">${symbol}</span>
       </span>
     `;
 
@@ -365,10 +369,11 @@ function renderMemory(container, dayData, onComplete) {
       }
 
       cardBtn.classList.add("is-flipped");
-      cardBtn.setAttribute("aria-label", `Carta ${idx + 1}: ${symbol}`);
+      cardBtn.setAttribute("aria-label", `Carta ${cardBtn.dataset.cardNumber}: ${symbol}`);
 
       if (!firstCard) {
         firstCard = cardBtn;
+        playGameTone(523.25, 90);
         return;
       }
 
@@ -386,20 +391,22 @@ function renderMemory(container, dayData, onComplete) {
         secondCard = null;
         matchedCount += 1;
         pairsEl.textContent = `Parejas: ${matchedCount} / ${pairs.length}`;
+        playGameTone(659.25, 160);
 
         if (matchedCount === pairs.length) {
           showWinFeedback(feedback, dayData, onComplete);
         }
       } else {
+        playGameTone(523.25, 90);
         lockBoard = true;
         flipTimer = setTimeout(() => {
           if (firstCard) {
             firstCard.classList.remove("is-flipped");
-            firstCard.setAttribute("aria-label", "Carta oculta");
+            firstCard.setAttribute("aria-label", `Carta ${firstCard.dataset.cardNumber}`);
           }
           if (secondCard) {
             secondCard.classList.remove("is-flipped");
-            secondCard.setAttribute("aria-label", "Carta oculta");
+            secondCard.setAttribute("aria-label", `Carta ${secondCard.dataset.cardNumber}`);
           }
           firstCard = null;
           secondCard = null;
